@@ -1,0 +1,55 @@
+{
+    "name": "spatie/laravel-menu",
+    "description": "Html menu generator for Laravel",
+    "keywords": [
+        "spatie",
+        "laravel-menu"
+    ],
+    "homepage": "https://github.com/spatie/laravel-menu",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sebastian De Deyne",
+            "email": "sebastiandedeyne@gmail.com",
+            "homepage": "https://spatie.be",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.2",
+        "illuminate/auth": "^7.0",
+        "illuminate/contracts": "^7.0",
+        "illuminate/support": "^7.0",
+        "spatie/menu": "^2.8"
+    },
+    "require-dev": {
+        "fzaninotto/faker": "^1.9",
+        "orchestra/testbench": "^5.0",
+        "phpunit/phpunit": "^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Spatie\\Menu\\Laravel\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Spatie\\Menu\\Laravel\\Test\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Spatie\\Menu\\Laravel\\MenuServiceProvider"
+            ],
+            "aliases": {
+                "Menu": "Spatie\\Menu\\Laravel\\Facades\\Menu"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

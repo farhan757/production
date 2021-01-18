@@ -66,6 +66,15 @@
                     </div>
 
                     <div class="form-group row">
+                        <label for="period" class="col-sm-2 control-label">Periode</label>
+                        <div class="col-sm-4">
+                          <div class="input-group date">  
+                            <input type="text" class="form-control pull-right periode" name="period" id="period" value="{{ $period ?? '' }}" required>
+                          </div>
+                          </div>
+                    </div>                    
+
+                    <div class="form-group row">
                         <div class="col-sm-3">
                           <div class="card card-outline card-success">
                             <div class="card-header">
@@ -230,6 +239,13 @@
           autoclose: true,
           format: "yyyy-mm-dd"
         });
+        $('.periode').datepicker({
+          autoclose: true,
+          changeMonth: true,
+          changeYear: true,
+                   
+          format: "MM yyyy"
+        });        
       $('#form-item').submit(function(e) {
         e.preventDefault();                        
         showLoad();

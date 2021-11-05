@@ -30,8 +30,8 @@
               </div>
             </div>
           </form>
-
-          <table class="table table-bordered">
+          <div class="card-body table-responsive p-0">
+            <table  class="table table-bordered table-head-fixed">
               <tr>
                 <th style="width: 10px">#</th>
                 <th>Time submit</th>
@@ -39,6 +39,7 @@
                 <th>Cycle/Part</th>
                 <th>Project</th>
                 <th>Status</th>
+                <th>Total Data</th>
                 <th>Action</th>
               </tr>
               @foreach($list as $index=>$value)
@@ -49,14 +50,16 @@
                 <td>{{ $value->cycle }} / {{ $value->part }}</td>
                 <td>{{ $value->project_name }}</td>
                 <td>{{ $value->status_name }} / {{ $value->result_name }}</td>
+                <td>{{ $value->jml_data }}</td>
                 <td> 
-                <a onclick="showDetail({{ $value->id }})" class="text-info"><i class="fas fa-eye"></i></a>&nbsp;
-                <a onclick="showFormUpdate({{ $value->id }})" class="text-warning"><i class="far fa-check-square"></i></a>
+                <a href="#" title="Detail" onclick="showDetail({{ $value->id }})" class="text-info"><i class="fas fa-eye"></i></a>&nbsp;
+                <a href="#" title="Form Update" onclick="showFormUpdate({{ $value->id }})" class="text-warning"><i class="far fa-check-square"></i></a>
                 </td>
               </tr>
               @endforeach
           </table>
-          {{ $list }}
+          {{ $list->withQueryString()->links() }}
+          </div>
         </div>
     </div>
 </div>
@@ -74,6 +77,14 @@
 
     }
 
+    function hideLoad(){
+      $('#vload').hide();
+    }
+
+    function showLoad(){
+      $('#vload').show();
+    }    
+
     function clearFilter() {
       $('#ticket').val('');
       $('#cycle').val('');
@@ -81,6 +92,7 @@
 
     function showFormUpdate(id) {
       hideError();
+      hideLoad();      
       $('input[name=_method]').val('POST');
       $('#modal-form').modal('show');
       $('#modal-form form')[0].reset();
@@ -206,6 +218,7 @@
         e.preventDefault();
         var url = rootUrl;
           var formData = new FormData($('#form-status')[0]);
+          showLoad();
           $.ajax({
             url: url,
             type: 'POST',
@@ -214,6 +227,7 @@
             processData:false,
             success: function(response) {
               //alert(JSON.stringify(response));
+              hideLoad();
               if(response.status==1) {
                   Swal.fire({
                     icon: 'success',
@@ -245,6 +259,7 @@
               }
             },
             error: function(response) {
+              hideLoad();
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',

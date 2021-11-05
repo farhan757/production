@@ -7,14 +7,15 @@
 @stop
 
 @section('content')
+
   <div class="col-sm-12">
     <div class="card card-outline card-primary">
       <div class="card-header">
         <h3 class="card-title">Form Stock Material</h3>
         <ol class="breadcrumb float-sm-right">
           <h3 class="card-title pull-right"><strong>STOCK {{ $comp->name ?? '' }} : {{ $comp->stock ?? '0' }}</strong></h3>
-        </ol>
-      </div>
+        </ol>                               
+      </div>          
             <form class="form-horizontal" name="form-item" id="form-item" method="POST" enctype="multipart/form-data">
                 {{ csrf_field() }}
                 <div class="card-body">
@@ -81,8 +82,8 @@
                     <div class="box-body">
                       <div class="row">
                       </div>
-                      <div class="col-xs-5 table-responsive">
-                        <table class="table table-bordered">
+                      <div class="card-body table-responsive p-0" style="height: 400px;">
+                        <table  class="table table-bordered table-head-fixed">
                             <tr>
                               <th>Tgl Trans/Cycle/Part</th>
                               <th>No Job</th>
@@ -94,10 +95,11 @@
                             
                             @if(isset($nojob))
                          
-                              <!-- transaksi keluar dari job -->
-                              @foreach($listjob as $index=>$value)
+                              <!-- transaksi keluar dari job -->  
+                              
+                               @foreach($listjob as $value)
                               <tr>
-                                <td>{{ $value->tgl_trans }}/{{ $value->cycle }}/{{ $value->part }}</td>                                
+                                <td>{{ $value->tgl_out }}/{{ $value->cycle }}/{{ $value->part }}</td>                                
                                 <td>{{ $value->no_job }}</td>
                                 <td>{{ $value->nama_material }}</td>
                                 <td>{{ $value->code }}</td>
@@ -106,9 +108,9 @@
                               </tr>
                               @endforeach
                               <!-- transaksi keluar dari testprint-->
-                              @foreach($listtest as $index=>$value)
+                              @foreach($listtest as $value)
                               <tr>
-                                <td>{{ $value->tgl_trans }}</td>                                
+                                <td>{{ $value->tgl_out }}</td>                                
                                 <td>{{ $value->no_job }}</td>
                                 <td>{{ $value->nama_material }}</td>
                                 <td>{{ $value->code }}</td>
@@ -117,16 +119,18 @@
                               </tr>
                               @endforeach  
                               <!-- transaksi masuk po-->
-                              @foreach($listmsk as $index=>$value)
+                              @if(isset($listmsk))
+                              @foreach($listmsk as $value)
                               <tr>
-                                <td>{{ $value->tgl_trans }}</td>                                
-                                <td>{{ $value->no_job }}</td>
-                                <td>{{ $value->nama_material }}</td>
-                                <td>{{ $value->code }}</td>                                
+                                <td>{{ $value->tgl_in ?? 'masuk po' }}</td>                                
+                                <td>{{ $value->no_job ?? '' }}</td>
+                                <td>{{ $value->nama_material ?? '' }}</td>
+                                <td>{{ $value->code ?? ''}}</td>                                
                                 <td>{{ 0 }}</td>
-                                <td>{{ $value->qty }}</td>
+                                <td>{{ $value->qty ?? ''}}</td>
                               </tr>
-                              @endforeach                                                          
+                              @endforeach 
+                              @endif                                                         
                             @endif
                         </table>
                       </div>
@@ -140,15 +144,9 @@
 
 @stop
 
-@section('css')
-  <!-- Select2 -->
-  <link rel="stylesheet" href="{{ asset('vendor/select2/css/select2.min.css') }}">
-  <link rel="stylesheet" href="{{ asset('vendor/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
-@stop
 
 @section('js')
-<!-- Select2 -->
-<script src="{{ asset('vendor/select2/js/select2.full.min.js') }}"></script>
+
 
     <script>
     var rootUrl = "gudang";

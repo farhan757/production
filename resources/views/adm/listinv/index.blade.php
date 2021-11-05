@@ -10,18 +10,18 @@
   <div class="col-sm-12">
     <div class="card card-outline card-primary">
       <div class="card-header">
-        <h3 class="card-title">Data PO Material</h3>
+        <h3 class="card-title">List Invoice</h3>
       </div>
         <div class="card-body">
           <form action="" method="get" class="form-horizontal">
             {{ csrf_field() }}
             <div class="row" style="padding-bottom: 15px">
               <div class="col-sm-4">
-                    <input type="text" class="form-control pull-right" name="nopo" id="nopo" value="{{ $nopo ?? '' }}" placeholder="No PO">
+                    <input type="text" class="form-control pull-right" name="no_inv" id="no_inv" value="{{ $no_inv ?? '' }}" placeholder="No Invoice">
               </div>
               <div class="col-sm-2">
                   <div class="input-group date">                                      
-                    <input type="text" class="form-control pull-right" name="tglpo" id="tglpo" placeholder="Tanggal PO" value="{{ $tglpo ?? '' }}">
+                    <input type="text" class="form-control pull-right" name="tglgen" id="tglgen" placeholder="Tanggal Invoice" value="{{ $tglgen ?? '' }}">
                   </div>
               </div>
               <div class="col-md-2">
@@ -30,62 +30,90 @@
               </div>
             </div>
           </form>
-          <div class="col-xs-5 table-responsive">
-          <table class="table table-bordered">
+          <div class="card-body table-responsive p-0" style="height: 400px;">
+            <table  class="table table-bordered table-head-fixed">
               <tr>
                 <th style="width: 10px">#</th>
-                <th>No PO</th>
-                <th>Tanggal PO</th>
-                <th>Kode/Vendor</th>
+                <th>No Invoice</th>
+                <th>Tanggal Generate</th>
+                <th>Customer/Aplikasi</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
-              @foreach($listpo as $index=>$value)
+              @foreach($listinv as $index=>$value)
               <tr>
-                <td>{{ ($listpo->perPage()*($listpo->currentPage()-1)) +$loop->iteration }}</td>
-                <td>{{ $value->no_po }}</td>
-                <td>{{ $value->tgl_po }}</td>
-                <td>{{ $value->code }} / {{ $value->name }}</td>
-                <td>
-                @if($value->complete == 1)
-                  <span class="badge bg-success">Completed</span>
-                @else
-                  <span class="badge bg-danger">Waiting</span>
-                @endif
-                </td>
+                <td>{{ ($listinv->perPage()*($listinv->currentPage()-1)) +$loop->iteration }}</td>
+                <td>{{ $value->no_inv }}</td>
+                <td>{{ $value->generate_date }}</td>
+                <td>{{ $value->nm_cust }} / {{ $value->nm_pro }}</td>
+                <td>{{ $value->nm_rs }}</td>
                 <td> 
-                <a href="#" title="view detail" onclick="showDetail('{{ $value->no_po }}')" class="text-info"><i class="fas fa-eye"></i></a>&nbsp;
-                
-                <a href="#" title="Print PO" onclick="cetak('{{ $value->no_po }}')"><i class="fa fa-print"></i></a>&nbsp;
-                @if($value->print == 0)
-                <a href="#" title="delete" onclick="deleteUser('{{ $value->no_po }}')" class="text-danger"><i class="fas fa-trash"></i></a>
-                @endif
+                <a href="#" title="view detail" onclick="showDetail({{ $value->id }})" class="text-info"><i class="fas fa-eye"></i></a>&nbsp;
+                <a href="#" title="Update" onclick="showForm({{ $value->id }})"><i class="fa fa-list"></i></a>&nbsp;
+                <a href="#" title="Print Invoice" onclick="cetak({{ $value->id }})"><i class="fa fa-print"></i></a>&nbsp;                
                 </td>
               </tr>
               @endforeach
           </table>
           </div>
-          {{ $listpo }}
+          {{ $listinv }}
         </div>
     </div>
 </div>  
-  @include('po.listpo.detaildata')
+@include('adm.listinv.form')
+@include('adm.listinv.detaildata')
 @stop
 
 @section('js')
 <script type="text/javascript">
     var rootUrl = 'po';
     var curentId;
-
+    status();
     function cetak(id){
-      var nopo = id;
-      window.open('printpo/'+nopo,'_blank');
-      window.reload();
+      alert(id);
+      
+      $.ajax({
+              url:  'cetak/' + id,
+              type: "GET",
+              data: { "_token": "{{ csrf_token() }}", },
+              dataType: "JSON",
+              success: function(response) {
+                var param = "?period="+response.data.period+"&project_id="+response.data.projects_id+"&tgldari="+response.data.from_date+"&tglsampai="+response.data.until_date+"&pkp="+response.data.pkp+"&b_pkp="+response.data.b_pkp+"&kredit="+response.data.kredit+"&tunai="+response.data.tunai+"&t_materai="+response.data.materai+"&t_ppn="+response.data.ppn+"&no_inv="+response.data.no_inv;      
+                        window.open('preview/'+param,'_blank','toolbar=yes,scrollbars=yes,resizable=yes,top=100,left=100,width=1000,height=1000')
+                        window.open('perincian/'+param,'_blank','toolbar=no,scrollbars=yes,resizable=yes,top=1000,left=1000,width=1000,height=1000')                                                
+              },
+              error : function() {
+                Swal.fire({
+                  icon:'error',
+                  title: 'Error'
+                });
+              }
+      });
     }
 
     function clearFilter() {
-      $('#nopo').val('');
-      $('#tglpo').val('');
+      $('#no_inv').val('');
+      $('#tglgen').val('');
+    }
+
+    function status(){
+      var id = $('#result_id').val();
+      $('#tglbayar-div').hide();
+      if(id == 18){
+        $('#tglbayar-div').show();
+      }
+    }
+
+    function showForm(id) {
+      status();
+        save_method = "add";     
+        status();     
+        $('#id').val(id);
+        $('input[name=_method]').val('POST');
+        $('#modal-form').modal('show');
+        $('#modal-form form')[0].reset();
+        $('#modal-title').text('Form Update');
+        status();
     }
 
     function deleteUser(id) {
@@ -126,53 +154,54 @@
 
     function showDetail(id) {
       currentId = id;      
-      var uri = "{{ route('podetail',':currentId') }}";
+      var uri = "{{ route('listdetailinv',':currentId') }}";
       $.ajax({
-          url: uri.replace(':currentId', currentId),
-          type: "POST",
+          url: uri.replace(':currentId', id),
+          type: "GET",
           data: { "_token": "{{ csrf_token() }}", },
           dataType: "JSON",
           success: function(data) {
-              $('#modal-detail-material').modal('show');
-              $('#title-detail-material').text('Detail '+data.data.no_po);
+              $('#modal-detail-inv').modal('show');
+              $('#title-detail-inv').text('Detail '+data.data.no_inv);
 
-              $('#codevendor').html(data.data.code);
-              $('#namavendor').html(data.data.name);              
-              $('#tgl_po').html(data.data.tgl_po);
-              $('#createby').html(data.data.nama);
-              var tbody = '';
-              for(var i=0, l = data.list.length; i< l; i++) {
-                var obj = data.list[i];
-                tbody += `<tr>
-                      <td>${obj.code}</td>
-                      <td>${obj.name}</td>
-                      <td>${obj.qty_order}</td>
-                      <td>${obj.qty_arrive}</td>
-                      <td>${obj.satuan}</td>
+              $('#no_inv').html(data.data.no_inv);
+              $('#nm_cust').html(data.data.nm_cust);              
+              $('#nm_pro').html(data.data.nm_pro);
+              $('#kd_pro').html(data.data.kd_pro);
+              $('#tgl_gen').html(data.data.generate_date);
+              $('#tgl_jt').html(data.data.jatuhtempo_date);
+              $('#tgl_bayar').html(data.data.pay_date);
+
+              var tbukti = '';
+              for(var i=0, l = data.bukti.length; i< l; i++){
+                var obj = data.bukti[i];
+                tbukti += `<tr>
+                      <td>${obj.file_name}</td>
+                      <td>${obj.note}</td>
+                      <td><a href='download/${obj.file_id}'>Download</a></td>
                   </tr>`;
               }
-              $('#tbody-detail').html(tbody);
-          },
-          error : function() {
-              alert("Nothing Data");
+              $('#tbody-bukti').html(tbukti);
           }
         });
     }
 
-    $(function() {
-      $('#btn_material').click(function() {
-       window.open('printing/material/'+currentId, '_blank');
-      });
+    $(function() {      
 
-      $('#tglpo').datepicker({
+      $('#tglgen').datepicker({
         autoclose: true,
         format: "yyyy-mm-dd"
       });
 
-      $('#form-status').submit(function(e) {
+      $('#tglbayar').datepicker({
+        autoclose: true,
+        format: "yyyy-mm-dd"
+      });      
+
+      $('#form-item').submit(function(e) {
         e.preventDefault();
-        var url = "{{ route('updateappmaterial') }}";
-          var formData = new FormData($('#form-status')[0]);
+        var url = "{{ route('updatestatusinv') }}";
+          var formData = new FormData($('#form-item')[0]);
           $.ajax({
             url: url,
             type: 'POST',

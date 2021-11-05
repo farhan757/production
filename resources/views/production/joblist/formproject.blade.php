@@ -1,17 +1,21 @@
 <div class="modal fade" id="modal-form">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+
+       <div class="overlay-wrapper"> 
+       <div class="overlay dark" id="vload" ><i class="fas fa-5x fa-sync-alt fa-spin"></i>&nbsp; &nbsp; &nbsp;<div class="text-bold pt-2" type="hide">Loading...</div></div>
+        <div class="modal-content">    
             <div class="modal-header">
-              <h4 class="modal-title" id="modal-title">Form Upload Job List</h4>
-            </div>
-            <form name="form-item" id="form-item" method="POST" enctype="multipart/form-data">
+              <h4 class="modal-title" id="modal-title">Form Upload Job List</h4>              
+            </div>        
+            <form class="form-horizontal" name="form-item" id="form-item" method="POST" enctype="multipart/form-data">
                 {{ csrf_field() }}
-                <div class="modal-body">
+                <div class="card-body">
+                <div class="modal-body">                
                     <div class="form-group row">
                         <label for="customer" class="col-sm-2 control-label">Customer</label>
 
-                        <div class="col-sm-4">
-                            <select onchange="getProject()" class="form-control" name="customer_id" id="customer_id">
+                        <div class="col-sm-8">
+                            <select class="form-control select2" onchange="getProject()"  name="customer_id" id="customer_id">
                                 @foreach($customers as $index=>$value)
                                 <option value="{{ $value->id }}" 
                                     @if(isset($data->customer_id))
@@ -28,8 +32,8 @@
                     <div class="form-group row">
                         <label for="project" class="col-sm-2 control-label">Project</label>
 
-                        <div class="col-sm-4">
-                            <select class="form-control" name="project_id" id="project_id" required>                                        
+                        <div class="col-sm-8">
+                            <select class="form-control select2" name="project_id" id="project_id" required>                                        
                               </select>
                         </div>
                     </div>
@@ -37,8 +41,7 @@
                     <div class="form-group row">
                         <label for="cycle" class="col-sm-2 control-label">Cycle</label>
                         <div class="col-sm-4">
-                            <div class="input-group date">
-                              
+                            <div class="input-group date">                              
                               <input type="text" class="form-control pull-right" name="cycle" id="cycle" required>
                             </div>
                         </div>
@@ -90,6 +93,7 @@
                         </div>
                     </div>
                 </div>
+                </div>
                 <!-- /.box-body -->
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
@@ -100,5 +104,6 @@
 
             </form>
         </div>
+      </div>  
     </div>
 </div>

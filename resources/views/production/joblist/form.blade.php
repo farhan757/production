@@ -4,6 +4,7 @@
             <div class="modal-header">
               <h4 class="modal-title" id="modal-title">Form Upload Job List</h4>
             </div>
+            
             <form name="form-item" id="form-item" method="POST" enctype="multipart/form-data">
                 {{ csrf_field() }}
                 <input type="hidden" name="customer_id" id="customer_id">

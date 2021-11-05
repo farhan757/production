@@ -16,6 +16,9 @@
 
                             <div class="col-md-{{ $value['mdi'] }}">
                                 <select class="form-control" name="{{ $value['field'] }}" id="{{ $value['field'] }}">
+                                        @if($value['field'] == 'customer_id')
+                                            <option value="0">Internal</option>
+                                        @endif 
                                     @foreach($value['data'] as $index=>$value2)
                                     <option value="{{ $value2->id }}">{{ $value2->name }}</option>
                                     @endforeach
@@ -29,6 +32,7 @@
 
                                 <div class="col-md-{{ $value['mdi'] }}">
                                     <select class="form-control" name="{{ $value['field'] }}" id="{{ $value['field'] }}">
+                                       
                                         @foreach($value['data'] as $index=>$value2)
                                         <option value="{{ $value2->code }}">{{ $value2->name }}</option>
                                         @endforeach
@@ -52,8 +56,15 @@
 
                                     <div class="col-md-{{ $value['mdi'] }}">
                                         <input id="{{ $value['field'] }}" type="{{ $value['type'] }}" class="form-control{{ $errors->has($value['field']) ? ' is-invalid' : '' }}" name="{{ $value['field'] }}" value=""
+                                        
+                                        @if(isset($value['oninput']))
+                                            oninput="{{$value['oninput']}}"
+                                        @endif
                                         @if($value['required'])
                                             required
+                                        @endif
+                                        @if(isset($value['readonly']))
+                                            readonly
                                         @endif
                                         >
                                         

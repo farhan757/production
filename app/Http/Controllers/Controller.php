@@ -17,262 +17,287 @@ class Controller extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     public $keyUserInfo = "userInfo";
-//    public $uploadedFile = 'D:\www\production\storage\app\uploaded\incomingFiles';
-//    public $uploadApproval = 'D:\www\production\storage\app\uploaded\approvalFiles';
-//    public $uploadTemp = 'D:\www\production\storage\app\uploaded\temp';
+    //    public $uploadedFile = 'D:\www\production\storage\app\uploaded\incomingFiles';
+    //    public $uploadApproval = 'D:\www\production\storage\app\uploaded\approvalFiles';
+    //    public $uploadTemp = 'D:\www\production\storage\app\uploaded\temp';
     public $uploadedFile = '/var/www/production/storage/app/uploaded/incomingFiles';
     public $uploadApproval = '/var/www/production/storage/app/uploaded/approvalFiles';
     public $uploadApproved = '/var/www/production/storage/app/uploaded/approvedFiles';
     public $uploadPO = '/var/www/production/storage/app/uploaded/po';
+    public $uploadInv = '/var/www/production/storage/app/uploaded/invoice';
     public $uploadTemp = '/var/www/production/storage/app/uploaded/temp';
-    public $counterFileKey = 'counter_file'; 
+    public $counterFileKey = 'counter_file';
     public $counterProdKey = 'counter_prod';
-    public $counter_inv = 'counter_inv'; 
+    public $counter_inv = 'counter_inv';
     public $resultSuccesDefault = 1;
+    public $mailblast = 20;
     public $statusSuccess = 1;
     public $finishTask = 100;
     public $notapp = 14;
-    public $submitRevisiId=15;
-    public $gudangTaskId=16;
+    public $submitRevisiId = 15;
+    public $gudangTaskId = 16;
     public $countercomout = 'coun_com_out';
     public $countercomin = 'coun_com_in';
 
-    public $downloadTaskId=2;
-    public $uploadApprovalTaskId=13;
-    public $approvalTaskId=3;
-    public $submitJobListId=5;
-    public $submitPrintingId=6;
-    public $submitBalancingId=9;
-    public $distribusiId=11;
+    public $downloadTaskId = 2;
+    public $uploadApprovalTaskId = 13;
+    public $approvalTaskId = 3;
+    public $submitJobListId = 5;
+    public $submitPrintingId = 6;
+    public $submitBalancingId = 9;
+    public $distribusiId = 11;
 
-    public $scanQCId=8;
-    public $scanDistribusiId=10;
+    public $finisResult = 9;
+    public $onProgressResult = 8;
 
-    public $message=array(
-        'default'=>array(
-            'add'=>array(
-                'success'=>'Data berhasil ditambahkan',
-                'error'=>'Gagal menambahkan data'
+    public $scanQCId = 8;
+    public $scanDistribusiId = 10;
+
+    public $message = array(
+        'default' => array(
+            'add' => array(
+                'success' => 'Data berhasil ditambahkan',
+                'error' => 'Gagal menambahkan data'
             ),
-            'save'=>array(
-                'success'=>'Data berhasil disimpan',
-                'error'=>'Gagal menyimpan data'
+            'save' => array(
+                'success' => 'Data berhasil disimpan',
+                'error' => 'Gagal menyimpan data'
             ),
-            'delete'=>array(
-                'success'=>'Data berhasil dihapus',
-                'error'=>'Gagal menhapus data'
+            'delete' => array(
+                'success' => 'Data berhasil dihapus',
+                'error' => 'Gagal menhapus data'
             ),
-            'status'=>array(
-                'success'=>'Berhasil update status',
-                'error'=>'Update status gagal'
+            'status' => array(
+                'success' => 'Berhasil update status',
+                'error' => 'Update status gagal'
             ),
         ),
     );
     public $defaultMessageAddSuccess = 'Data berhasil ditambahkan';
     public $defaultMessageSaveSuccess = 'Data berhasil diubah';
 
-    public function getUser() {
+    public function getUser()
+    {
         return Auth::user();
     }
 
-    public function getUserInfo() {
-    	return json_decode(base64_decode(session(base64_encode($this->keyUserInfo))));
+    public function getUserInfo()
+    {
+        return json_decode(base64_decode(session(base64_encode($this->keyUserInfo))));
     }
 
-    public function getCounter($code) {
-    	$tmp = DB::table('table_counter')
-    	->where('code','=',$code)
-    	->select('counter')
-    	->first();
-    	if($tmp) {
-	    	$counter = $tmp->counter+1;
-	    	DB::table('table_counter')
-	    	->where('code','=',$code)
-	    	->update([
-	    		'counter'=>$counter
-	    	]);
-    	} else {
-    		$counter=1;
-    		DB::table('table_counter')
-    		->insert([
-    			'code'=>$code,
-    			'counter'=>$counter
-    		]);
-    	}
+    public function getCounter($code)
+    {
+        $tmp = DB::table('table_counter')
+            ->where('code', '=', $code)
+            ->select('counter')
+            ->first();
+        if ($tmp) {
+            $counter = $tmp->counter + 1;
+            DB::table('table_counter')
+                ->where('code', '=', $code)
+                ->update([
+                    'counter' => $counter
+                ]);
+        } else {
+            $counter = 1;
+            DB::table('table_counter')
+                ->insert([
+                    'code' => $code,
+                    'counter' => $counter
+                ]);
+        }
 
-    	return $counter;
+        return $counter;
     }
 
-    public function getNextTask($current_task, $project_id) {
-    	$task_now = DB::table('project_to_task')
-    	->where([
-    		['status_id','=',$current_task],
-    		['project_id','=',$project_id]
-    	])
-    	->first();
-    	$task_next = DB::table('project_to_task')
-    	->where([
-    		['sort','>', $task_now->sort],
-    		['project_id','=',$project_id]
-    	])->orderBy('sort')->first();
+    public function getNextTask($current_task, $project_id)
+    {
+        $task_now = DB::table('project_to_task')
+            ->where([
+                ['status_id', '=', $current_task],
+                ['project_id', '=', $project_id]
+            ])
+            ->first();
+        $task_next = DB::table('project_to_task')
+            ->where([
+                ['sort', '>', $task_now->sort],
+                ['project_id', '=', $project_id]
+            ])->orderBy('sort')->first();
 
-    	if($task_next) {
-    		return $task_next->status_id;
-    	} else return $finishTask;
+        if ($task_next) {
+            return $task_next->status_id;
+        } else return $finishTask;
     }
 
-    public function insertToTransaction($transaction) {
+    public function insertToTransaction($transaction)
+    {
         $user = Auth::user();
 
-    	DB::table('transaction_history')
-    	->insert([
-    		'file_id'=>$transaction['file_id'],
-    		'production_id'=>$transaction['production_id'],
-    		'status_id'=>$transaction['status_id'],
-    		'result_id'=>$transaction['result_id'],
-    		'note'=>$transaction['note'],
-    		'user_id'=>$user->id,
-    		'created_at'=>Carbon::now()
-    	]);
+        DB::table('transaction_history')
+            ->insert([
+                'file_id' => $transaction['file_id'],
+                'production_id' => $transaction['production_id'],
+                'status_id' => $transaction['status_id'],
+                'result_id' => $transaction['result_id'],
+                'note' => $transaction['note'],
+                'user_id' => $user->id,
+                'created_at' => Carbon::now()
+            ]);
     }
 
-    public function getCustomers() {
+    public function getCustomers()
+    {
         $sql = DB::table('customers');
 
         $info = $this->getUserInfo();
-        if($info->customer_id>0)
+        if ($info->customer_id > 0)
             $sql->where('id', '=', $info->customer_id);
-        
-        return $sql->get();
+
+        return $sql->orderBy('name', 'ASC')->get();
     }
 
-    public function getCustomersById($customer_id) {
-        $sql = DB::table('customers');        
-        if($customer_id>0)
+    public function getCustomersById($customer_id)
+    {
+        $sql = DB::table('customers');
+        if ($customer_id > 0)
             $sql->where('id', '=', $customer_id);
-        
-        return $sql->first();
-    }    
 
-    public function getVendor(){
+        return $sql->first();
+    }
+
+    public function getVendor()
+    {
         $sql = DB::table('vendor');
-        
+
         return $sql->get();
     }
 
-    public function getComponents($components_id=0){
+    public function getComponents($components_id = 0)
+    {
         $sql = DB::table('components')
-                ->where('group','=','material');
-        if($components_id != 0){
-            $sql->where('id','=',$components_id);
+            ->where('group', '=', 'material');
+        if ($components_id != 0) {
+            $sql->where('id', '=', $components_id);
             return $sql->first();
-        }else{
+        } else {
             return $sql->get();
         }
-        
     }
 
-    public function getProject() {
+    public function getProject()
+    {
         $sql = DB::table('projects');
 
         $info = $this->getUserInfo();
-        if($info->project_id>0)
+        if ($info->project_id > 0)
             $sql->where('id', '=', $info->project_id);
 
         return $sql->get();
     }
 
-    public function getProjectbyId($project_id) {
+    public function getProjectbyId($project_id)
+    {
         $sql = DB::table('projects')
-        ->where('id', '=', $project_id)->first();
+            ->where('id', '=', $project_id)->first();
         return $sql;
     }
 
-    public function updateIncomingFile($data) {
+    public function updateIncomingFile($data)
+    {
         $user = Auth::user();
 
         DB::table('incoming_data')
-        ->where('id','=',$data['id'])
-        ->update([
-            'current_status_id'=>$data['current_status_id'],
-            'current_status_result_id'=>$data['current_status_result_id'],
-            'next_status_id'=>$data['next_status_id'],
-            'updated_by'=>$user->id,
-            'updated_at'=>Carbon::now()
-        ]);
+            ->where('id', '=', $data['id'])
+            ->update([
+                'current_status_id' => $data['current_status_id'],
+                'current_status_result_id' => $data['current_status_result_id'],
+                'next_status_id' => $data['next_status_id'],
+                'updated_by' => $user->id,
+                'updated_at' => Carbon::now()
+            ]);
     }
 
-    public function updateProductionData($data) {
+    public function updateProductionData($data)
+    {
         $user = Auth::user();
 
         DB::table('production_data')
-        ->where('id','=',$data['id'])
-        ->update([
-            'current_status_id'=>$data['current_status_id'],
-            'current_status_result_id'=>$data['current_status_result_id'],
-            'next_status_id'=>$data['next_status_id'],
-            'updated_by'=>$user->id,
-            'updated_at'=>Carbon::now()
-        ]);
+            ->where('id', '=', $data['id'])
+            ->update([
+                'current_status_id' => $data['current_status_id'],
+                'current_status_result_id' => $data['current_status_result_id'],
+                'next_status_id' => $data['next_status_id'],
+                'updated_by' => $user->id,
+                'updated_at' => Carbon::now()
+            ]);
     }
 
-    public function getResult($result_id) {
-        return DB::table('task_result')->where('id','=',$result_id)->first();
+    public function getResult($result_id)
+    {
+        return DB::table('task_result')->where('id', '=', $result_id)->first();
     }
 
-    public function getProjectComponent($project_id) {
+    public function getProjectComponent($project_id)
+    {
         return DB::table('project_to_component')
-        ->select('component_id')
-        ->orderBy('sort')->where('project_id','=',$project_id)->get();
+            ->select('component_id')
+            ->orderBy('sort')->where('project_id', '=', $project_id)->get();
     }
 
-    public function generateProdTicket($project_id) {
-        $counter = str_pad($this->getCounter($this->counterProdKey) ,5,'0',STR_PAD_LEFT);
+    public function generateProdTicket($project_id)
+    {
+        $counter = str_pad($this->getCounter($this->counterProdKey), 4, '0', STR_PAD_LEFT);
         $project = DB::table('projects')
-        ->where('id','=',$project_id)->first();
+            ->where('id', '=', $project_id)->first();
         $customer = DB::table('customers')
-        ->where('id','=',$project->customer_id)->first();
+            ->where('id', '=', $project->customer_id)->first();
 
-        $date = date("Ymd");
-        $project_id = str_pad($project_id,3,'0',STR_PAD_LEFT);
+        $date = date("ymd");
+        $project_id = str_pad($project_id, 3, '0', STR_PAD_LEFT);
 
-        return $customer->code.$date.$project_id.$counter;
+        return $customer->code . $date . $project_id . $counter;
     }
 
-    public function checkProductionExist(Request $request) {
+    public function checkProductionExist(Request $request)
+    {
         return DB::table('production_data')
-        ->where([
-            ['cycle','=',$request->cycle],
-            ['part','=',$request->part],
-            ['project_id',$request->project_id],
-        ])->exists();
+            ->where([
+                ['cycle', '=', $request->cycle],
+                ['part', '=', $request->part],
+                ['project_id', $request->project_id],
+            ])->exists();
     }
 
-    public function checkScanQC($project_id) {
+    public function checkScanQC($project_id)
+    {
         return DB::table('project_to_task')
-        ->where([
-            ['project_id','=',$project_id],
-            ['status_id','=',$this->scanQCId]
-        ])->exists();
+            ->where([
+                ['project_id', '=', $project_id],
+                ['status_id', '=', $this->scanQCId]
+            ])->exists();
     }
 
-    public function checkScanDistribusi($project_id) {
+    public function checkScanDistribusi($project_id)
+    {
         return DB::table('project_to_task')
-        ->where([
-            ['project_id','=',$project_id],
-            ['status_id','=',$this->scanDistribusiId]
-        ])->exists();
+            ->where([
+                ['project_id', '=', $project_id],
+                ['status_id', '=', $this->scanDistribusiId]
+            ])->exists();
     }
 
-    public function test($project_id) {
-        if($this->checkScanDistribusi($project_id))
+    public function test($project_id)
+    {
+        if ($this->checkScanDistribusi($project_id))
             echo 'ada';
         else echo 'tidak ada';
     }
 
-    public function updateTaskFile($file_id, $status_id, $result_id, $note) {
+    public function updateTaskFile($file_id, $status_id, $result_id, $note)
+    {
         $prod = DB::table('incoming_data')
-        ->where('id','=',$file_id)->first();
+            ->where('id', '=', $file_id)->first();
 
         $results = $this->getResult($result_id);
         switch ($results->isok) {
@@ -284,28 +309,29 @@ class Controller extends BaseController
                 break;
             case 'N':
                 $next_status_id = $this->finishTask;
-                break;            
+                break;
         }
 
         $upd = array();
-        $upd['id']=$file_id;
-        $upd['current_status_id']=$status_id;
-        $upd['current_status_result_id']=$result_id;
-        $upd['next_status_id']=$next_status_id;
+        $upd['id'] = $file_id;
+        $upd['current_status_id'] = $status_id;
+        $upd['current_status_result_id'] = $result_id;
+        $upd['next_status_id'] = $next_status_id;
 
         $this->updateIncomingFile($upd);
 
-        $transaction['file_id']=$file_id;
-        $transaction['production_id']=0;
-        $transaction['status_id']=$status_id;
-        $transaction['result_id']=$result_id;
-        $transaction['note']=$note;
+        $transaction['file_id'] = $file_id;
+        $transaction['production_id'] = 0;
+        $transaction['status_id'] = $status_id;
+        $transaction['result_id'] = $result_id;
+        $transaction['note'] = $note;
         $this->insertToTransaction($transaction);
     }
 
-    public function updateTask($production_id, $status_id, $result_id, $note) {
+    public function updateTask($production_id, $status_id, $result_id, $note)
+    {
         $prod = DB::table('production_data')
-        ->where('id','=',$production_id)->first();
+            ->where('id', '=', $production_id)->first();
 
         $results = $this->getResult($result_id);
         switch ($results->isok) {
@@ -317,181 +343,222 @@ class Controller extends BaseController
                 break;
             case 'N':
                 $next_status_id = $this->finishTask;
-                break;            
+                break;
+            case 'C':
+                $next_status_id = $status_id;
+                break;
         }
 
         $upd = array();
-        $upd['id']=$production_id;
-        $upd['current_status_id']=$status_id;
-        $upd['current_status_result_id']=$result_id;
-        $upd['next_status_id']=$next_status_id;
+        $upd['id'] = $production_id;
+        $upd['current_status_id'] = $status_id;
+        $upd['current_status_result_id'] = $result_id;
+        $upd['next_status_id'] = $next_status_id;
 
         $this->updateProductionData($upd);
 
-        $transaction['file_id']=0;
-        $transaction['production_id']=$production_id;
-        $transaction['status_id']=$status_id;
-        $transaction['result_id']=$result_id;
-        $transaction['note']=$note;
+        $transaction['file_id'] = 0;
+        $transaction['production_id'] = $production_id;
+        $transaction['status_id'] = $status_id;
+        $transaction['result_id'] = $result_id;
+        $transaction['note'] = $note;
         $this->insertToTransaction($transaction);
 
-        if($next_status_id==$this->submitPrintingId){
-            $msg = $this->insertToComponentOut($production_id);
-            if($msg=="sukses"){
-                DB::table('production_data')
-                ->where('id',$production_id)
-                ->update([
-                    'status_warehouse' => 1
-                ]);
+        $statuswarehouse = DB::table('production_data')->where('id', $production_id)->first();
+        if ($next_status_id === $this->submitPrintingId) {
+            if ($statuswarehouse->status_warehouse == 0) {
+                $msg = $this->insertToComponentOut($production_id);
+                if ($msg == "sukses") {
+                    DB::table('production_data')
+                        ->where('id', $production_id)
+                        ->update([
+                            'status_warehouse' => 1
+                        ]);
+                }
+            }
+        } else {
+            // ini masuk jika next status nya finish atau tidak cetak tetapi menggunakan jasa saja
+            if ($next_status_id === $this->mailblast || $next_status_id === 12) {
+                if ($statuswarehouse->status_warehouse == 0) {
+                    $msg = $this->insertToComponentOut($production_id);
+                    if ($msg == "sukses") {
+                        DB::table('production_data')
+                            ->where('id', $production_id)
+                            ->update([
+                                'status_warehouse' => 1
+                            ]);
+                    }
+                }
             }
         }
 
-        if($next_status_id==$this->distribusiId) { // jika next adalah distribusi id, maka buat manifest            
-                $this->generateManifest($production_id);
+        //|| $status_id == $this->scanDistribusiId << fitur next
+        if ($next_status_id == $this->distribusiId) { // jika next adalah distribusi id, maka buat manifest            
+            $this->generateManifest($production_id);
         }
+
+        //return $next_status_id.' dan '.$this->submitPrintingId;
     }
 
-    public function insertToComponentOut($production_id){
-        $sql = DB::table('production_data_detail_list')
-        ->select('production_data.job_ticket','components.id','components.code','components.name','components.satuan','group','components.price', DB::raw('sum(production_data_detail_list.total) as total'), )
-        ->leftJoin('components', 'components.id','=','production_data_detail_list.component_id')
-        ->leftJoin('production_data_detail','production_data_detail_list.production_data_detail_id','=','production_data_detail.id')
-        ->leftJoin('production_data', 'production_data.id','=', 'production_data_detail.production_id')
-        ->groupBy('components.id','components.code','components.name','components.satuan','group')
-        ->where('production_data.id','=', $production_id)->get(); 
+    public function insertToComponentOut($production_id)
+    {
+        $sql = DB::table('production_data')
+            ->select('project_to_component.project_id as pro_id', 'production_data.created_at as tgl_job', 'production_data.job_ticket', 'components.id', 'components.code', 'components.name', 'components.satuan', 'group', 'project_to_component.price_jual', DB::raw('sum(production_data_detail_list.total) as total'),)
+            ->join('production_data_detail', 'production_data_detail.production_id', '=', 'production_data.id')
+            ->leftJoin('production_data_detail_list', 'production_data_detail.id', '=', 'production_data_detail_list.production_data_detail_id')
+            ->leftJoin('project_to_component', 'production_data_detail_list.component_id', '=', 'project_to_component.component_id')
+            ->leftJoin('components', 'project_to_component.component_id', '=', 'components.id')
+            ->where('production_data.id', '=', $production_id)
+            ->whereIn('project_to_component.project_id', function ($q) use ($production_id) {
 
-        $msg="sukses";
+                $q->select('production_data.project_id')->from('production_data')->where('production_data.id', "$production_id");
+            })
+            ->groupBy('components.id', 'components.code', 'components.name', 'components.satuan', 'components.group')
+            ->get();
+
         DB::beginTransaction();
-        try
-        {            
-            foreach($sql as $value){
+        try {
+            foreach ($sql as $value) {
                 DB::table('components_out')->insert([
                     'job_ticket' => $value->job_ticket,
                     'component_id' => $value->id,
-                    'component_price' => $value->price,
+                    'component_price' => $value->price_jual,
                     'group' => $value->group,
-                    'qty' => $value->total
-                ]);                
+                    'qty' => $value->total,
+                    'tgl_job' => $value->tgl_job
+                ]);
+                DB::commit();
             }
-            DB::commit();
-        }catch(Exception $e){
+
+            $msg = "sukses";
+        } catch (Exception $e) {
             DB::rollBack();
-            $msg="gagal";
+            $msg = "gagal";
         }
         return $msg;
     }
 
 
-    public function generateManifest($production_id) {
+    public function generateManifest($production_id)
+    {
 
         $prod = DB::table('production_data')
-        ->where('id','=',$production_id)
-        ->first();
+            ->where('id', '=', $production_id)
+            ->first();
 
         $data = DB::table('production_data_detail')
-        ->where([
-            ['production_id','=',$production_id],
-            ['scan_distribusi','=',1]
-        ])
-        ->whereNull('no_manifest')
-        ->select('ekspedisi','service')
-        ->groupBy('ekspedisi','service')
-        //->orderBy('service', 'asc')
-        ->get();
-        
+                ->where(function($query)
+                {
+                $query->orWhere('no_manifest','=','')
+                    ->orWhereNull('no_manifest');
+                })        
+            ->where([
+                ['production_id', '=', $production_id],
+                ['scan_distribusi', '=', 1]
+            ])            
+            ->select('ekspedisi', 'service')
+            ->groupBy('ekspedisi', 'service')
+            //->orderBy('service', 'asc')
+            ->get();
+
         foreach ($data as $key => $value) {
 
             $no_manifest = $this->getNoManifest();
             $manifest = array();
-            $manifest['no_manifest']=$no_manifest;
-            $manifest['cycle']=$prod->cycle;
-            $manifest['part']=$prod->part;
-            $manifest['jenis']=$prod->jenis;
-            $manifest['ekspedisi']=$value->ekspedisi;
-            $manifest['service']=$value->service;
-            $manifest['production_id']=$production_id;
-            $manifest['print']=0;
-            
+            $manifest['no_manifest'] = $no_manifest;
+            $manifest['cycle'] = $prod->cycle;
+            $manifest['part'] = $prod->part;
+            $manifest['jenis'] = $prod->jenis;
+            $manifest['ekspedisi'] = $value->ekspedisi;
+            $manifest['service'] = $value->service;
+            $manifest['production_id'] = $production_id;
+            $manifest['print'] = 0;
+
             DB::table('production_data_detail')
-            ->where([
-                ['production_id', '=', $production_id],
-                ['scan_distribusi','=',1],
-                ['ekspedisi','=',$value->ekspedisi],
-                ['service','=',$value->service]
-            ])
-            ->whereNull('no_manifest')
-            ->update([
-                'no_manifest'=>$no_manifest
-            ]);
+                ->where([
+                    ['production_id', '=', $production_id],
+                    ['scan_distribusi', '=', 1],
+                    ['ekspedisi', '=', $value->ekspedisi],
+                    ['service', '=', $value->service]
+                ])
+                ->whereNull('no_manifest')
+                ->update([
+                    'no_manifest' => $no_manifest
+                ]);
             $this->insertManifest($manifest);
         }
-        
-
     }
 
-    public function insertManifest($data) {
+    public function insertManifest($data)
+    {
         $user = Auth::user();
         DB::table('manifest')
-        ->insert([
-            'no_manifest'=>$data['no_manifest'],
-            'production_id'=>$data['production_id'],
-            'cycle'=>$data['cycle'],
-            'part'=>$data['part'],
-            'jenis'=>$data['jenis'],
-            'ekspedisi'=>$data['ekspedisi'],
-            'service'=>$data['service'],
-            'print'=>$data['print'],
-            'created_by'=>$user->id,
-            'created_at'=>Carbon::now()
-        ]);
+            ->insert([
+                'no_manifest' => $data['no_manifest'],
+                'production_id' => $data['production_id'],
+                'cycle' => $data['cycle'],
+                'part' => $data['part'],
+                'jenis' => $data['jenis'],
+                'ekspedisi' => $data['ekspedisi'],
+                'service' => $data['service'],
+                'print' => $data['print'],
+                'created_by' => $user->id,
+                'created_at' => Carbon::now()
+            ]);
     }
 
-    public function getNoManifest() {
-        $rand = rand(10,999999);
+    public function getNoManifest()
+    {
+        $rand = rand(10, 999999);
         $no_manifest =  str_pad($rand, 6, '0', STR_PAD_LEFT);
         $chek = DB::table('manifest')
-        ->where('no_manifest')->exists();
-        if(!$chek) {
+            ->where('no_manifest')->exists();
+        if (!$chek) {
             return $no_manifest;
-        } else return $this->getNoManifest();
+        } else {
+            return $this->getNoManifest();
+        }
     }
 
-    function check($data) {
-        if(isset($data)) {
-            if($data!=false) {
+    function check($data)
+    {
+        if (isset($data)) {
+            if ($data != false) {
                 return true;
-            }  else return false;
+            } else return false;
         } else return false;
     }
 
-    function check2($data) {
-        if(isset($data)) {
-            if($data!='0') {
+    function check2($data)
+    {
+        if (isset($data)) {
+            if ($data != '0') {
                 return true;
-            }  else return false;
+            } else return false;
         } else return false;
     }
 
 
-    function readExel($file_name, $components) {
+    function readExel($file_name, $components)
+    {
         $error = array();
-        $error['error']="Error dibaris berikut :";
-        $error['row']=array();
+        $error['error'] = "Error dibaris berikut :";
+        $error['row'] = array();
         $return = array();
 
         $spreadsheet = IOFactory::load($file_name);
         $objWorksheet = $spreadsheet->getActiveSheet();
         //$sheetData = $spreadsheet->getSheet(0)->toArray(null, true, true, true);
-//      var_dump($sheetData);
-//        $sheetData = $spreadsheet->getSheet(0)->toArray(null, true, true, true);
+        //      var_dump($sheetData);
+        //        $sheetData = $spreadsheet->getSheet(0)->toArray(null, true, true, true);
         $highestRow = $objWorksheet->getHighestRow();
         $highestColumn = $objWorksheet->getHighestColumn();
 
         $temp = array();
-        if($highestRow>1) {
+        if ($highestRow > 1) {
 
             for ($row = 2; $row <= $highestRow; ++$row) {
-                $err=0;
+                $err = 0;
                 $tmpret = array();
                 $tmpret['no'] =  $objWorksheet->getCellByColumnAndRow(1, $row)->getValue();
                 $tmpret['seq'] =  $objWorksheet->getCellByColumnAndRow(2, $row)->getValue();
@@ -504,51 +571,57 @@ class Controller extends BaseController
                 $tmpret['address1'] =  $objWorksheet->getCellByColumnAndRow(9, $row)->getValue();
                 $tmpret['address2'] =  $objWorksheet->getCellByColumnAndRow(10, $row)->getValue();
                 $tmpret['address3'] =  $objWorksheet->getCellByColumnAndRow(11, $row)->getValue();
-                $tmpret['city'] =  $objWorksheet->getCellByColumnAndRow(12, $row)->getValue();
-                $tmpret['pos'] =  $objWorksheet->getCellByColumnAndRow(13, $row)->getValue();
-                $tmpret['telp'] =  $objWorksheet->getCellByColumnAndRow(14, $row)->getValue();
-                $tmpret['ekspedisi'] =  $objWorksheet->getCellByColumnAndRow(15, $row)->getValue();
-                $tmpret['service'] =  $objWorksheet->getCellByColumnAndRow(16, $row)->getValue();
+                $tmpret['address4'] =  $objWorksheet->getCellByColumnAndRow(12, $row)->getValue();
+                $tmpret['address5'] =  $objWorksheet->getCellByColumnAndRow(13, $row)->getValue();
+                $tmpret['city'] =  $objWorksheet->getCellByColumnAndRow(14, $row)->getValue();
+                $tmpret['pos'] =  $objWorksheet->getCellByColumnAndRow(15, $row)->getValue();
+                $tmpret['telp'] =  $objWorksheet->getCellByColumnAndRow(16, $row)->getValue();
+                $tmpret['ekspedisi'] =  $objWorksheet->getCellByColumnAndRow(17, $row)->getValue();
+                $tmpret['service'] =  $objWorksheet->getCellByColumnAndRow(18, $row)->getValue();
 
-                $cntr=0;
+
+                $cntr = 0;
                 $tmpcomp = array();
                 foreach ($components as $key => $value) {
                     $cntr++;
-                    $col=16+$cntr;
+                    $col = 18 + $cntr;
                     $cmp = array();
-                    $cmp['component_id']=$value->component_id;
+                    $cmp['component_id'] = $value->component_id;
                     $tmpval = $objWorksheet->getCellByColumnAndRow($col, $row)->getValue();
-                    if(!is_null($tmpval)) {
-                        $cmp['value']=$tmpval;
+                    if (!is_null($tmpval)) {
+                        $cmp['value'] = $tmpval;
                         array_push($tmpcomp, $cmp);
-                    } else $err=1;
+                    } else $err = 1;
                 }
-                $tmpret['components']=$tmpcomp;
-                if($err==1) {
+                $tmpret['components'] = $tmpcomp;
+                $tmpret['bst_inserting'] = $objWorksheet->getCellByColumnAndRow($col, $row)->getValue();
+
+                if ($err == 1) {
                     array_push($error['row'], $row);
                 } else {
                     array_push($return, $tmpret);
                 }
             }
         }
-        if(count($error['row'])>2) {
+        if (count($error['row']) > 2) {
             return $error;
         } else return $return;
     }
 
-    function readText($file_name, $components, $delimited='|') {
+    function readText($file_name, $components, $delimited = '|')
+    {
         $error = array();
-        $error['error']="Error :";
+        $error['error'] = "Error :";
         $return = array();
         $file = fopen($file_name, 'r');
-        $cntf=0;
+        $cntf = 0;
         while (!feof($file)) {
             $err = 0;
             $cntf++;
             $text = fgets($file);
-            if($cntf>1 && $text!="") {
-                $index = $cntf-1;
-                $texts = explode($delimited, $text);
+            if ($cntf > 1 && $text != "") {
+                $index = $cntf - 1;
+                $texts = explode($delimited, trim($text));
                 $tmpret = array();
                 $tmpret['no'] = $texts[0];
                 $tmpret['seq'] = $texts[1];
@@ -561,28 +634,31 @@ class Controller extends BaseController
                 $tmpret['address1'] = $texts[8];
                 $tmpret['address2'] = $texts[9];
                 $tmpret['address3'] = $texts[10];
-                $tmpret['city'] = $texts[11];
-                $tmpret['pos'] = $texts[12];
-                $tmpret['telp'] = $texts[13];
-                $tmpret['ekspedisi'] = $texts[14];
-                $tmpret['service'] = $texts[15];
+                $tmpret['address4'] = $texts[11];
+                $tmpret['address5'] = $texts[12];
+                $tmpret['city'] = $texts[13];
+                $tmpret['pos'] = $texts[14];
+                $tmpret['telp'] = $texts[15];
+                $tmpret['ekspedisi'] = $texts[16];
+                $tmpret['service'] = $texts[17];
 
-                $cntr=0;
+                $cntr = 0;
                 $tmpcomp = array();
                 foreach ($components as $key => $value) {
                     $cntr++;
-                    $col=15+$cntr;
+                    $col = 17 + $cntr;
                     $cmp = array();
-                    $cmp['component_id']=$value->component_id;
-                    if(array_key_exists($col, $texts)) {
+                    $cmp['component_id'] = $value->component_id;
+                    if (array_key_exists($col, $texts)) {
                         $tmpval = $texts[$col];
-                        $cmp['value']=$tmpval;
+                        $cmp['value'] = $tmpval;
                         array_push($tmpcomp, $cmp);
-                    } else $err=1;
+                    } else $err = 1;
                 }
-                $tmpret['components']=$tmpcomp;
+                $tmpret['components'] = $tmpcomp;
+                $tmpret['bst_inserting'] = $texts[$col+1];
 
-                if($err==1) {
+                if ($err == 1) {
                     array_push($error, $text);
                 } else {
                     array_push($return, $tmpret);
@@ -591,94 +667,121 @@ class Controller extends BaseController
         }
         fclose($file);
 
-        if(count($error)>2) {
+        if (count($error) > 2) {
             return $error;
         } else
-        return $return;
+            return $return;
     }
 
-    function insertToProduction($data) {
-        return DB::table('production_data')            
-            ->insertGetId([
-                'file_id'=>$data['file_id'],
-                'job_ticket'=>$data['job_ticket'],
-                'file_name'=>$data['file_name'],
-                'path_file'=>$data['path_file'],
-                'cycle'=>$data['cycle'],
-                'part'=>$data['part'],
-                'jenis'=>$data['jenis'],
-                'customer_id'=>$data['customer_id'],
-                'project_id'=>$data['project_id'],
-                'current_status_id'=>$data['current_status_id'],
-                'current_status_result_id'=>$data['current_status_result_id'],
-                'next_status_id'=>$data['next_status_id'],
-                'created_by'=>$data['created_by'],
-                'created_at'=>Carbon::now(),
-                'updated_by'=>$data['created_by'],
-                'updated_at'=>Carbon::now()
-            ]);
-    }
-
-    function insertComponents($components, $id_detail) {
-        $cntr=0;
-        foreach ($components as $key => $value) {
-            $cntr++;
-            DB::table('production_data_detail_list')
-            ->insert([
-                'production_data_detail_id'=>$id_detail,
-                'component_id'=>$value['component_id'],
-                'total'=>$value['value']
-            ]);
+    function insertToProduction($data)
+    {
+        //DB::beginTransaction();
+        try {
+            return DB::table('production_data')
+                ->insertGetId([
+                    'file_id' => $data['file_id'],
+                    'job_ticket' => $data['job_ticket'],
+                    'file_name' => $data['file_name'],
+                    'path_file' => $data['path_file'],
+                    'cycle' => $data['cycle'],
+                    'part' => $data['part'],
+                    'jenis' => $data['jenis'],
+                    'customer_id' => $data['customer_id'],
+                    'project_id' => $data['project_id'],
+                    'current_status_id' => $data['current_status_id'],
+                    'current_status_result_id' => $data['current_status_result_id'],
+                    'next_status_id' => $data['next_status_id'],
+                    'created_by' => $data['created_by'],
+                    'created_at' => Carbon::now(),
+                    'updated_by' => $data['created_by'],
+                    'updated_at' => Carbon::now()
+                ]);
+            //DB::commit();
+        } catch (Exception $e) {
+            //DB::rollBack();
+            return $e;
         }
     }
 
-    function insertToDetail($data, $id_prod) {
-        $tmp_id = DB::table('production_data_detail')
-            ->insertGetId([
-                'production_id'=>$id_prod,
-                'seq'=>$data['seq'],
-                'barcode_env'=>$data['barcode_env'],
-                'barcode_document'=>$data['barcode_document'],
-                'account_no'=>$data['account_no'],
-                'account_no2'=>$data['account_no2'],
-                'penerima'=>$data['penerima'],
-                'tertanggung'=>$data['tertanggung'],
-                'address1'=>$data['address1'],
-                'address2'=>$data['address2'],
-                'address3'=>$data['address3'],
-                'city'=>$data['city'],
-                'pos'=>$data['pos'],
-                'telp'=>$data['telp'],
-                'ekspedisi'=>$data['ekspedisi'],
-                'service'=>$data['service'],
-                'scan_qc'=>$data['scan_qc'],
-                'scan_distribusi'=>$data['scan_distribusi'],
-                'created_at'=>Carbon::now(),
-                'updated_at'=>Carbon::now()
-            ]);
-
-            return $tmp_id;
+    function insertComponents($components, $id_detail)
+    {
+        $cntr = 0;
+        DB::beginTransaction();
+        try {
+            foreach ($components as $key => $value) {
+                $cntr++;
+                DB::table('production_data_detail_list')
+                    ->insert([
+                        'production_data_detail_id' => $id_detail,
+                        'component_id' => $value['component_id'],
+                        'total' => $value['value']
+                    ]);
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+        }
     }
 
-    public function getValues($param) {
+    function insertToDetail($data, $id_prod)
+    {
+        DB::beginTransaction();
+        try {
+            $tmp_id = DB::table('production_data_detail')
+                ->insertGetId([
+                    'production_id' => $id_prod,
+                    'seq' => $data['seq'],
+                    'barcode_env' => $data['barcode_env'],
+                    'barcode_document' => $data['barcode_document'],
+                    'account_no' => $data['account_no'],
+                    'account_no2' => $data['account_no2'],
+                    'penerima' => $data['penerima'],
+                    'tertanggung' => $data['tertanggung'],
+                    'address1' => $data['address1'],
+                    'address2' => $data['address2'],
+                    'address3' => $data['address3'],
+                    'address4' => $data['address4'],
+                    'address5' => $data['address5'],
+                    'city' => $data['city'],
+                    'pos' => $data['pos'],
+                    'telp' => $data['telp'],
+                    'ekspedisi' => $data['ekspedisi'],
+                    'service' => $data['service'],
+                    'scan_qc' => $data['scan_qc'],
+                    'scan_distribusi' => $data['scan_distribusi'],
+                    'bst_inserting' => $data['bst_inserting'],
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                ]);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            $tmp_id = $e;
+        }
+        return $tmp_id;
+    }
+
+    public function getValues($param)
+    {
         return DB::table('master_value')
-        ->where('flag', $param)->get();
+            ->where('flag', $param)->get();
     }
 
-    public function angkaRomawi($val){
+    public function angkaRomawi($val)
+    {
         $arr = array(
             '1' => 'I',
             '2' => 'II',
             '3' => 'III',
             '4' => 'IV',
-            '5'=>'V',
-            '6'=>'VI',
-            '7'=>'VII',
-            '8'=>'VIII',
-            '9'=>'IX',
-            '10'=>'X',
-            '11'=>'XI',
-            '12'=>'XII'
+            '5' => 'V',
+            '6' => 'VI',
+            '7' => 'VII',
+            '8' => 'VIII',
+            '9' => 'IX',
+            '10' => 'X',
+            '11' => 'XI',
+            '12' => 'XII'
         );
         $intVal = (int)$val;
         $strVal = (string)$intVal;
@@ -686,45 +789,136 @@ class Controller extends BaseController
         return $getVal;
     }
 
-    function company(){
+    function company()
+    {
         $sql = DB::table('company')->first();
         return $sql;
     }
 
-    public function terbilang($nilai) {
-        if($nilai<0) {
-            $hasil = "minus ". trim($this->penyebut($nilai));
+    public function terbilang($nilai)
+    {
+        if ($nilai < 0) {
+            $hasil = "minus " . trim($this->penyebut($nilai));
         } else {
             $hasil = trim($this->penyebut($nilai));
-        }     		
-        return $hasil.' rupiah';
-    }    
+        }
+        return $hasil . ' rupiah';
+    }
 
-	public function penyebut($nilai) {
-		$nilai = abs($nilai);
-		$huruf = array("", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas");
-		$temp = "";
-		if ($nilai < 12) {
-			$temp = " ". $huruf[$nilai];
-		} else if ($nilai <20) {
-			$temp = $this->penyebut($nilai - 10). " belas";
-		} else if ($nilai < 100) {
-			$temp = $this->penyebut($nilai/10)." puluh". $this->penyebut($nilai % 10);
-		} else if ($nilai < 200) {
-			$temp = " seratus" . $this->penyebut($nilai - 100);
-		} else if ($nilai < 1000) {
-			$temp = $this->penyebut($nilai/100) . " ratus" . $this->penyebut($nilai % 100);
-		} else if ($nilai < 2000) {
-			$temp = " seribu" . $this->penyebut($nilai - 1000);
-		} else if ($nilai < 1000000) {
-			$temp = $this->penyebut($nilai/1000) . " ribu" . $this->penyebut($nilai % 1000);
-		} else if ($nilai < 1000000000) {
-			$temp = $this->penyebut($nilai/1000000) . " juta" . $this->penyebut($nilai % 1000000);
-		} else if ($nilai < 1000000000000) {
-			$temp = $this->penyebut($nilai/1000000000) . " milyar" . $this->penyebut(fmod($nilai,1000000000));
-		} else if ($nilai < 1000000000000000) {
-			$temp = $this->penyebut($nilai/1000000000000) . " trilyun" . $this->penyebut(fmod($nilai,1000000000000));
-		}     
-		return $temp;
-	}    
+    public function penyebut($nilai)
+    {
+        $nilai = abs($nilai);
+        $huruf = array("", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas");
+        $temp = "";
+        if ($nilai < 12) {
+            $temp = " " . $huruf[$nilai];
+        } else if ($nilai < 20) {
+            $temp = $this->penyebut($nilai - 10) . " belas";
+        } else if ($nilai < 100) {
+            $temp = $this->penyebut($nilai / 10) . " puluh" . $this->penyebut($nilai % 10);
+        } else if ($nilai < 200) {
+            $temp = " seratus" . $this->penyebut($nilai - 100);
+        } else if ($nilai < 1000) {
+            $temp = $this->penyebut($nilai / 100) . " ratus" . $this->penyebut($nilai % 100);
+        } else if ($nilai < 2000) {
+            $temp = " seribu" . $this->penyebut($nilai - 1000);
+        } else if ($nilai < 1000000) {
+            $temp = $this->penyebut($nilai / 1000) . " ribu" . $this->penyebut($nilai % 1000);
+        } else if ($nilai < 1000000000) {
+            $temp = $this->penyebut($nilai / 1000000) . " juta" . $this->penyebut($nilai % 1000000);
+        } else if ($nilai < 1000000000000) {
+            $temp = $this->penyebut($nilai / 1000000000) . " milyar" . $this->penyebut(fmod($nilai, 1000000000));
+        } else if ($nilai < 1000000000000000) {
+            $temp = $this->penyebut($nilai / 1000000000000) . " trilyun" . $this->penyebut(fmod($nilai, 1000000000000));
+        }
+        return $temp;
+    }
+
+    public function getBodyMail($id)
+    {
+        $tb_email = DB::table("body_email")->where("id", "=", $id)->first();
+        return $tb_email;
+    }
+
+    public function build_email($data, $total)
+    {
+        $email = $this->getBodyMail(1);
+
+        $body = str_replace("#CUSTOMER#", $data->customer_name, $email->body);
+        $body = str_replace("#JOB_TICKET#", $data->job_tiket, $body);
+        $body = str_replace("#NO_MANIFEST#", $data->no_manifest, $body);
+        $body = str_replace("#PROJECT#", $data->project_name, $body);
+        $body = str_replace("#CYCLE#", $data->cycle, $body);
+        $body = str_replace("#JENIS#", $data->prod_jenis, $body);
+        $body = str_replace("#PART#", $data->part, $body);
+        $body = str_replace("#QTY#", $total, $body);
+        $body = str_replace("#EKSPEDISI#", $data->ekspedisi, $body);
+        $body = str_replace("#SERVICE#", $data->service, $body);
+        $body = str_replace("#PICKUPBY#", $data->nama_kurir, $body);
+        $body = str_replace("#PICKUPDATE#", $data->tgl_kirim, $body);
+
+        return $body;
+    }
+
+    public function insertMailNotif($data, $subject, $body)
+    {
+        DB::beginTransaction();
+        try {
+            DB::table('email_notif')->insert([
+                'no_manifest' => $data->no_manifest,
+                'email_to' => $data->project_email,
+                'subject' => $subject,
+                'body' => $body,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            ]);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+        }
+    }
+
+    # untuk hitung saldo material
+    public function SaldoAwal()
+    {
+        # code...
+        $data = DB::table('components')
+            ->where('group', '=', 'material')
+            ->select(DB::raw('sum(components.saldo_awal) as saldoawal'))
+            ->groupBy('components.group')->first();
+        return response()->json($data);
+    }
+
+
+    public function SaldoAkhir()
+    {
+        # code...
+        $data = DB::table('components')
+            ->where('group', '=', 'material')
+            ->select(DB::raw('sum(components.saldo_akhir) as saldoakhir'))
+            ->groupBy('components.group')->first();
+        return response()->json($data);
+    }
+
+    public function SaldoPakai()
+    {
+        # code...
+        $data = DB::table('components')
+            ->join('components_out', 'components_out.component_id', '=', 'components.id')
+            ->where('components.group', '=', 'material')
+            ->select(DB::raw('SUM(components.price_beli*components_out.qty) as saldopakai'))
+            ->groupBy('components.group')->first();
+        return response()->json($data);
+    }
+
+    public function SaldoMasuk()
+    {
+        # code...
+        $data = DB::table('components')
+            ->join('components_in', 'components_in.component_id', '=', 'components.id')
+            ->where('components.group', '=', 'material')
+            ->select(DB::raw('SUM(components.price_beli*components_in.qty) as saldomasuk'))
+            ->groupBy('components.group')->first();
+        return response()->json($data);
+    }
 }

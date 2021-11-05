@@ -21,6 +21,7 @@
         </dl>
     </div>
     <div class="row">
+    <div class="col-xs-5 table-responsive">
         <table class="table table-bordered">
             <tr>
                 <th>No Amplop</th>
@@ -39,6 +40,7 @@
             </tr>
             @endforeach
         </table>
+    </div>        
     </div>
   </div>
   <div class="modal-footer">

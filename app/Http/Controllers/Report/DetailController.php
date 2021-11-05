@@ -84,11 +84,13 @@ class DetailController extends Controller
 	        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Alamat1');
 	        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Alamat2');
 	        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Alamat3');
-	        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'Kota');
-	        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Kode Pos');
-	        $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Telp');
-	        $objPHPExcel->getActiveSheet()->SetCellValue('L1', 'Ekspedisi');
-	        $objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Serivice');
+			$objPHPExcel->getActiveSheet()->SetCellValue('I1', 'Alamat4');
+	        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Alamat5');
+	        $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Kota');
+	        $objPHPExcel->getActiveSheet()->SetCellValue('L1', 'Kode Pos');
+	        $objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Telp');
+	        $objPHPExcel->getActiveSheet()->SetCellValue('N1', 'Ekspedisi');
+	        $objPHPExcel->getActiveSheet()->SetCellValue('O1', 'Serivice');
 	        $row=0;
 	        foreach ($list as $key => $value) {
 	            $row++;
@@ -101,11 +103,13 @@ class DetailController extends Controller
 	            $objPHPExcel->getActiveSheet()->SetCellValue('F'.($row+1), $value->address1);
 	            $objPHPExcel->getActiveSheet()->SetCellValue('G'.($row+1), $value->address2);
 	            $objPHPExcel->getActiveSheet()->SetCellValue('H'.($row+1), $value->address3);
-	            $objPHPExcel->getActiveSheet()->SetCellValue('I'.($row+1), $value->city);
-	            $objPHPExcel->getActiveSheet()->SetCellValue('J'.($row+1), $value->pos);
-	            $objPHPExcel->getActiveSheet()->SetCellValue('K'.($row+1), $value->telp);
-	            $objPHPExcel->getActiveSheet()->SetCellValue('L'.($row+1), $value->ekspedisi);
-	            $objPHPExcel->getActiveSheet()->SetCellValue('M'.($row+1), $value->service);    
+	            $objPHPExcel->getActiveSheet()->SetCellValue('I'.($row+1), $value->address4);
+	            $objPHPExcel->getActiveSheet()->SetCellValue('J'.($row+1), $value->address5);				
+	            $objPHPExcel->getActiveSheet()->SetCellValue('K'.($row+1), $value->city);
+	            $objPHPExcel->getActiveSheet()->SetCellValue('L'.($row+1), $value->pos);
+	            $objPHPExcel->getActiveSheet()->SetCellValue('M'.($row+1), $value->telp);
+	            $objPHPExcel->getActiveSheet()->SetCellValue('N'.($row+1), $value->ekspedisi);
+	            $objPHPExcel->getActiveSheet()->SetCellValue('O'.($row+1), $value->service);    
 	        }
 
 			$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);

@@ -20,7 +20,8 @@
             </button>
           </div>
         </div>
-        <table class="table table-bordered">
+        <div class="card-body table-responsive p-0" style="height: 400px;">
+            <table  class="table table-bordered table-head-fixed">
             <tr>
               <th style="width: 10px">#</th>
               <th>Status Name</th>
@@ -41,6 +42,7 @@
             @endforeach
         </table>
         {{ $list }}
+        </div>
 			</div>
 		</div>
 	</div>

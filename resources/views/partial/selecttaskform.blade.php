@@ -8,7 +8,8 @@
           {{ csrf_field() }}
           <input type="hidden" name="id-task" id="id-task">
           <div class="modal-body">
-                  <table class="table">
+          <div class="card-body table-responsive p-0" style="height: 400px;">
+            <table  class="table table-bordered table-head-fixed">
                   <tr>
                     <th style="width: 10px">#</th>
                     <th>Name</th>
@@ -32,6 +33,7 @@
                   </tr>
                   @endforeach
               </table>
+            </div>
           </div>
           <!-- /.box-body -->
           <div class="modal-footer">

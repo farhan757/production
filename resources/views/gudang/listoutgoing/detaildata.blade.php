@@ -24,8 +24,8 @@
 
         </div>
         <div class="row">
-          <div class="col-xs-5 table-responsive">
-            <table class="table table-bordered">
+        <div class="card-body table-responsive p-0" style="height: 400px;">
+            <table  class="table table-bordered table-head-fixed">
               <thead>
                 <tr>
                     <th>Kode</th>

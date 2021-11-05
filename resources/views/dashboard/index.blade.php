@@ -106,5 +106,6 @@
           $("#deliv_today").html(data);
         });
     }
-</script>@stop
+</script>
+@stop
 

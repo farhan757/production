@@ -4,7 +4,7 @@ namespace JeroenNoten\LaravelAdminLte\Menu;
 
 use Illuminate\Support\Arr;
 use JeroenNoten\LaravelAdminLte\Helpers\MenuItemHelper;
-
+use Auth;
 class Builder
 {
     protected const ADD_AFTER = 0;
@@ -33,6 +33,9 @@ class Builder
     public function __construct(array $filters = [])
     {
         $this->filters = $filters;
+        if(Auth::user()){
+            return redirect()->to('/');
+        }
     }
 
     /**

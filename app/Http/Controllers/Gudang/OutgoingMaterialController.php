@@ -44,45 +44,43 @@ class OutgoingMaterialController extends Controller
     	$tgljob = $request->input('tgljob');
     	$info = $request->input('note');
         $project_id = $request->input('project_id');
-		$components_id = $request->input('components_id');
-		$qty = $request->input('qty');
-
-		$components = $this->getComponents($components_id);
 
 		DB::beginTransaction();
 		try{
-			if(DB::table('outgoing_components')->where([
-				['no_job','=',$nojob]
-			])->exists() == false){
-				DB::table('outgoing_components')->insert([
-					'no_job' => $nojob,
-					'project_id' => $project_id,
-					'input_id' => $user->id,
-					'tgl_out' => $tgljob,
-					'note' => $info
+			DB::table('outgoing_components')->insert([
+				'no_job' => $nojob,
+				'project_id' => $project_id,
+				'input_id' => $user->id,
+				'tgl_out' => $tgljob,
+				'note' => $info
+			]);
+	
+			for($i=0; $i < count($request->qty); $i++){				
+				$components_id = $request->components_id[$i];
+				$qty = $request->qty[$i];
+				$components = $this->getComponents($components_id);
+				$id = DB::table('outgoing_components_detail')
+				->insertGetId([
+					'outgoing_components_job'=>$nojob,
+					'components_id'=>$components_id,
+					'components_price'=>$components->price_beli,
+					'qty_out'=>$qty,
+					'created_at'=>Carbon::now(),
+					'updated_at'=>Carbon::now()
 				]);
 			}
-	
-			$id = DB::table('outgoing_components_detail')
-			->insertGetId([
-				'outgoing_components_job'=>$nojob,
-				'components_id'=>$components_id,
-				'components_price'=>$components->price_beli,
-				'qty_out'=>$qty,
-				'created_at'=>Carbon::now(),
-				'updated_at'=>Carbon::now()
-			]);
-
 			DB::commit();
+			return response()->json([
+				'status'=>1,
+				'message'=>$this->message['default']['add']['success']
+			]);
 		}catch(Exception $e){
 			DB::rollBack();
-		}
-
-		
-    	return response()->json([
-            'status'=>1,
-            'message'=>$this->message['default']['add']['success']
-        ]);
+			return response()->json([
+				'status'=>2,
+				'message'=>$this->message['default']['add']['error']
+			]);
+		}		
     }
 
 	public function delete(Request $request){

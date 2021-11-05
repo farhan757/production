@@ -37,20 +37,30 @@
                             </div>
 
                             <div class="form-group row">
-                                <label for="project" class="col-sm-2 control-label">Project</label>
+                                <label for="customer" class="col-sm-2 control-label">Customer</label>
 
                                 <div class="col-sm-4">
-                                    <select class="form-control" name="project_id" id="project_id" >
+                                    <select class="form-control select2"  name="customer_id" id="customer_id" onchange="getProject()" >
                                       <option value="0">All</option>
-                                        @foreach($projects as $index=>$value)
+                                        @foreach($customer as $index=>$value)
                                         <option value="{{ $value->id }}" 
-                                            @if(isset($project_id))
-                                              @if($project_id==$value->id) 
+                                            @if(isset($customer_id))
+                                              @if($customer_id==$value->id) 
                                                   selected
                                               @endif 
                                             @endif
-                                            >{{ $value->customer_name }} - {{ $value->project_name }}</option>
+                                            >{{ $value->customer_name }}</option>
                                         @endforeach                              
+                                      </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="project" class="col-sm-2 control-label">Project</label>
+
+                                <div class="col-sm-4">
+                                    <select class="form-control select2" name="project_id" id="project_id" >
+                            
                                       </select>
                                 </div>
                             </div>
@@ -69,7 +79,7 @@
                                 <label for="part" class="col-sm-2 control-label">Part</label>
 
                                 <div class="col-sm-4">
-                                    <select class="form-control" name="part" >
+                                    <select class="form-control select2" name="part" >
                                         <option value="0">All</option>
                                         @foreach($parts as $key=>$value)
                                         <option value="{{ $value->code }}"
@@ -88,7 +98,7 @@
                                 <label for="jenis" class="col-sm-2 control-label">Jenis</label>
 
                                 <div class="col-sm-4">
-                                    <select class="form-control" name="jenis" >
+                                    <select class="form-control select2" name="jenis" >
                                         <option value="0">All</option>
                                         @foreach($jeniss as $key=>$value)
                                         <option value="{{ $value->code }}"
@@ -126,7 +136,8 @@
                           </div>
                         </form>
                       </div>
-                        <table class="table table-bordered">
+                      <div class="card-body table-responsive p-0" style="height: 400px;">
+                          <table  class="table table-bordered table-head-fixed">
                             <tr>
                               <th style="width: 10px">#</th>
                               <th>Tanggal</th>
@@ -151,6 +162,7 @@
                             @endforeach
                         </table>
                         {{ $list }}
+                      </div>
                     </div>
                     <!-- /.box-body -->
                 </div>
@@ -164,6 +176,22 @@
 
 @section('js')
 <script type="text/javascript">
+  getProject();
+  function getProject(){
+    var id = $('#customer_id').val();
+    $.getJSON('../report/summary/getproj/'+id+'', function(respon){
+       var xhtml = '<option value="0">All</option>';
+       for(let i=0; i<respon.length; i++){
+         var sel = '';
+         if(respon[i].id == id){
+             sel = 'selected';
+         }
+          xhtml += "<option value=" + respon[i].id + " "+sel+" >" + respon[i].project_name + "</option>";
+       }
+       $('#project_id').html(xhtml);
+    });
+  }
+
   function showDetail(id) {
       $.ajax({
           url: '../production/joblist' + '/detail/' + id,
@@ -267,16 +295,17 @@
     $(function () {
         $('#start_date').datepicker({
           autoclose: true,
-          format: "yyyy/mm/dd"
+          format: "yyyy-mm-dd"
         });
         $('#end_date').datepicker({
           autoclose: true,
-          format: "yyyy/mm/dd"
+          format: "yyyy-mm-dd"
         });
         $('#cycle').datepicker({
           autoclose: true,
           format: "yyyymmdd"
         });
+        $('.select2').select2();
     });
 </script>
 @endsection

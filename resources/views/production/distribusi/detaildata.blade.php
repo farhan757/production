@@ -18,7 +18,8 @@
                   </dl>
               </div>
               <div class="row">
-                  <table class="table table-bordered">
+              <div class="card-body table-responsive p-0" style="height: 400px;">
+                <table  class="table table-bordered table-head-fixed">
                       <tr>
                           <th>No Amplop</th>
                           <th>Penerima</th>
@@ -28,6 +29,7 @@
                         
                       </tbody>
                   </table>
+                </div>
               </div>
             </div>
             <div class="modal-footer">

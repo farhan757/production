@@ -12,24 +12,42 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::get('/generate/nomanifest','Controller@getNoManifest');
+
 Auth::routes();
 
 Route::get('/test', function() {
     if(Auth::check()) {
         echo 'login';
+        
     } else echo 'not login';
 });
+Route::get('/tracking','Tracking\TrackingController@index');
+Route::post('/tracking/detail/{id}','Tracking\TrackingController@detail');
+Route::post('/update_saldo_awal','Master\ComponentController@update_saldo_awal')->name('update_saldo_awal');
+Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
+
+if(Auth::check()){
+    return redirect()->route('/logout');
+}
 
 Route::middleware('auth:web')->group(function () {
-	Route::get('/home', 'HomeController@index')->name('home');
-	Route::get('/dashboard', 'DashboardController@index')->name('dashboard');
-//	Route::get('/master/users', 'Master\UsersController@index')->name('users');
+	//Route::get('/home', 'HomeController@index')->name('home');
+	//Route::get('/dashboard', 'DashboardController@index')->name('dashboard');
+    
+    //	Route::get('/master/users', 'Master\UsersController@index')->name('users');
 	//
 	Route::get('/','DashboardController@show');
     Route::get('/home', 'DashboardController@show')->name('home');
-    Route::get('/home/getrange/{per}/{segment?}/{start?}/{end?}','HomeController@getRange');
-    Route::get('/dashboard', 'DashboardController@show')->name('dashboard');
+    Route::get('/home/getrange/{per}/{segment?}/{info?}/{start?}/{end?}','DashboardController@getrange');
+    Route::get('/grafik', 'DashboardController@showGrafik')->name('dashboard');
     Route::get('/dashboard/{type}', 'DashboardController@get');
+    Route::get('/saldo-awal','Controller@SaldoAwal')->name('SaldoAwal');
+    Route::get('/saldo-akhir','Controller@SaldoAkhir')->name('SaldoAkhir');
+    Route::get('/saldo-pakai','Controller@SaldoPakai')->name('SaldoPakai');
+    Route::get('/saldo-masuk','Controller@SaldoMasuk')->name('SaldoMasuk');
+    Route::get('/add-form','PO\POMaterialController@addform')->name('addform');
     //Please do not remove this if you want adminlte:route and adminlte:link commands to works correctly.
     #adminlte_routes
 
@@ -96,7 +114,13 @@ Route::middleware('auth:web')->group(function () {
         Route::post('/component/save/{id}', 'Master\ComponentController@save');
         Route::post('/component/add', 'Master\ComponentController@add');
         Route::post('/component/get/{id}', 'Master\ComponentController@get');
-        Route::post('/component/delete/{id}', 'Master\ComponentController@delete');    
+        Route::post('/component/delete/{id}', 'Master\ComponentController@delete'); 
+
+        Route::get('/vendor','Master\VendorController@index')->name('mastervendor'); 
+        Route::post('/vendor/save/{id}', 'Master\VendorController@save');
+        Route::post('/vendor/add', 'Master\VendorController@add');
+        Route::post('/vendor/get/{id}', 'Master\VendorController@get');
+        Route::post('/vendor/delete/{id}', 'Master\VendorController@delete');                  
     });
 
     Route::group(['prefix'=>'request'], function(){
@@ -122,6 +146,8 @@ Route::middleware('auth:web')->group(function () {
         Route::post('/joblist', 'Production\JobListController@upload');
         Route::post('/joblist/detail/{id}', 'Production\JobListController@detail')->name('joblistdetail');
         Route::get('/joblist/download/{id}', 'Production\JobListController@download');
+        Route::post('/joblist/delete','Production\JobListController@deleteJob')->name('deletejoblist');
+        Route::post('/joblist/cancel','Production\JobListController@cancelJob')->name('canceljoblist');
         Route::get('/approval', 'Production\PrintingController@index')->name('prodapproval');
         Route::get('/printing', 'Production\PrintingController@index')->name('prodprinting');
         Route::post('/printing', 'Production\PrintingController@update');
@@ -136,6 +162,18 @@ Route::middleware('auth:web')->group(function () {
         Route::post('/distribusi/detail/{no_manifest}', 'Production\DistribusiController@detail');
         Route::get('/distribusi/print/{no_manifest}', 'Production\DistribusiController@print');
         Route::get('/distribusi/download/{no_manifest}', 'Production\DistribusiController@download');
+        Route::get('/distribusi/cekprint/{no_manifest}','Production\DistribusiController@cekprint');
+        Route::get('/change-courier','Production\CourierController@index')->name('changecourier');
+        Route::post('/change-courier','Production\CourierController@saveUpdate');
+
+        Route::get('/scandistribusi','Production\ScanDistribusiController@index')->name('prodscaning');
+        Route::post('/scandistribusi','Production\ScanDistribusiController@formscan')->name('formscan');
+        Route::post('/scandistribusi/generate-manifest','Production\ScanDistribusiController@update')->name('genman');
+
+        Route::get('/checknoTick/{id}','Production\ScanDistribusiController@checkTicket')->name('checkTick');
+        Route::get('/scandistribusi/scanok/{id}/{nopol}','Production\ScanDistribusiController@scanok');
+
+        Route::get('/tesaja','Production\CourierController@index')->name('produpload');
     });
 
     Route::group(['prefix'=>'gudang'], function(){
@@ -164,7 +202,8 @@ Route::middleware('auth:web')->group(function () {
         Route::get('/createpo','PO\POMaterialController@index')->name('createpomaterial');
         Route::post('/upload','PO\POMaterialController@upload')->name('savepomaterial');
         Route::get('/nopo','PO\POMaterialController@generateNOPO')->name('generatenopo');
-        Route::post('/delete/{id}','PO\POMaterialController@delete')->name('deletedetailpo');
+        Route::post('/delete','PO\POMaterialController@delete')->name('deletedetailpo');
+        Route::post('/batal','PO\POMaterialController@batal')->name('batalpo');
         Route::get('/printpo/{nopo}','PO\ListPOController@printPO');
         Route::get('/listpomat','PO\ListPOController@index')->name('listpomaterial');
         Route::post('/delete/{id}','PO\ListPOController@delete');
@@ -172,32 +211,36 @@ Route::middleware('auth:web')->group(function () {
     });
 
     Route::group(['prefix'=>'adm'], function(){
-        Route::get('/generate-invoice','Adm\GenController@index')->name('geninv');
-        Route::get('/list-invoice','Adm\ListInvController@index')->name('listinv');
+        Route::get('/generate-invoice','Adm\GenController@index')->name('geninv');        
         Route::get('/noinv','Adm\GenController@generateNOINV')->name('generatenoiv');
         Route::post('/save-invoice','Adm\GenController@saveinvoice')->name('saveinvoice');
         Route::get('/preview','Adm\GenController@preview');
         Route::get('/perincian','Adm\GenController@perincian');
+
+        Route::get('/list-invoice','Adm\ListInvController@index')->name('listinv');
+        Route::post('/update-status-inv','Adm\ListInvController@update')->name('updatestatusinv');
+        Route::get('/detailinv/{id}','Adm\ListInvController@detail')->name('listdetailinv');
+        Route::get('/download/{id}','Adm\ListInvController@download');
+        Route::get('/cetak/{id}','Adm\ListInvController@cetak');
     });
 
-    Route::get('/report/detail', 'Report\DetailController@index')->name('reportdetail');
-    Route::get('/report/detail/detail/{id}', 'Report\DetailController@showdetail');
-
-    Route::get('/report/summary', 'Report\SummaryController@index')->name('reportsummary');
-
-    Route::get('/report/distribusi', 'Report\DistribusiController@index')->name('reportdistribusi');
-
-    Route::get('/report/material', 'Report\MaterialController@index')->name('reportmaterial');
+    Route::group(['prefix'=>'report'], function(){
+        Route::get('/detail', 'Report\DetailController@index')->name('reportdetail');
+        Route::get('/detail/detail/{id}', 'Report\DetailController@showdetail');
+        Route::get('/summary', 'Report\SummaryController@index')->name('reportsummary');
+        Route::get('/summary/getproj/{id}', 'Report\SummaryController@getProj');
+        Route::get('/distribusi', 'Report\DistribusiController@index')->name('reportdistribusi');
+        Route::get('/material', 'Report\MaterialController@index')->name('reportmaterial');
+        Route::get('/download-job-list','Report\FileJobController@index');
+        Route::get('/filejob','Report\FileJobController@index')->name('reportfilejob');
+    });
 
     Route::get('/check/{project_id}', 'Controller@test');
-
     Route::get('register', 'Auth\RegisterController@showRegistrationForm')->name('register');
     Route::post('register', 'Auth\RegisterController@register');
-
     Route::get('/util/getusers', 'Utility\ChatController@getusers');
-
+    Route::get('getproject/{id}','Adm\GenController@ProjectByid');
     Route::get('setting/master/project/getJsonByCustomer/{customer_id}', 'Master\ProjectsController@getByCustomer');
-
     Route::get('logout', 'Auth\LoginController@logout');
 	//
 });

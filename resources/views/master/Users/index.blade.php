@@ -20,7 +20,8 @@
             </button>
           </div>
         </div>
-          <table class="table table-bordered">
+        <div class="card-body table-responsive p-0" style="height: 400px;">
+            <table  class="table table-bordered table-head-fixed">
               <tr>
                 <th style="width: 10px">#</th>
                 <th>Nama</th>
@@ -45,7 +46,7 @@
               </tr>
               @endforeach
           </table>
-
+        </div>
       </div>
       <div class="card-footer">
             {{ $list }}
@@ -60,9 +61,21 @@
 @stop
 
 @section('js')
-    <script>
+    <script>    
 
+    $(document).ready(function(){
+      hideLoad();
+    });
     getProject();
+
+    function hideLoad(){       
+       $('#vload').hide();
+    }
+
+    function showLoad()
+    {
+      $('#vload').show();
+    }
 
     function getProject() {
         var e = document.getElementById("customer_id").value;
@@ -83,7 +96,8 @@
       @endforeach
     }
 
-    function unCheckMenu() {
+    function unCheckMenu() { 
+      hideLoad();    
       @foreach($menus as $key=>$value)
         $( "#{{ $value->id }}-menu" ).prop( "checked", false );
         @foreach($value->contents as $key2=>$value2)
@@ -93,6 +107,7 @@
     }
 
     function addForm() {
+        hideLoad();
         save_method = "add";
         hideError();      
 
@@ -136,21 +151,24 @@
                 });
               }
           });
-          window.location.reload();
+          //window.location.reload();
         }
       })
     }
 
     function menuForm(id) {
+      hideLoad();
       save_method = "menu";
       $('#title-menuform').text('Menu');
       $('#modal-menuform form')[0].reset();
+      
       $.ajax({
               url: "users" + '/getmenu/' + id,
               type: "POST",
               data: { "_token": "{{ csrf_token() }}", },
               dataType: "JSON",
               success: function(data) {
+                hideLoad();
                   $('#modal-menuform').modal('show');
                   $('#title-form').text('Menu');
                   $('#id-menuform').val(id);
@@ -161,14 +179,15 @@
 
               },
               error : function() {
+                hideLoad();
                   alert("Nothing Data");
               }
         });
     }
 
     function editForm(id) {
-      save_method = "menu";
-      hideError();
+      hideLoad();
+      save_method = "menu";      
       $('input[name=_method]').val('PATCH');
       $('#modal-form form')[0].reset();
           $.ajax({
@@ -177,6 +196,7 @@
               data: { "_token": "{{ csrf_token() }}", },
               dataType: "JSON",
               success: function(data) {
+                
                   $('#modal-form').modal('show');
                   $('#title-form').text('Edit Job');
 
@@ -197,16 +217,20 @@
     }
 
     $(function(){
-      $("form[name='form-menu']").validate({        
+      
+      $("form[name='form-menu']").validate({ 
+        //hideLoad();       
         submitHandler: function(form) {
           var id = $('#id-menuform').val();
           url = "users/replacemenu/"+id;
+          showLoad();
           $.ajax({
             url: url,
             type: form.method,
             data: $('#form-menu').serializeArray(),
             success: function(response) {
               //alert(JSON.stringify(response));
+              hideLoad();
               Swal.fire({
                 icon: 'success',
                 title: response.message,
@@ -216,6 +240,7 @@
               })
             },
             error: function(response) {
+              hideLoad();
               Swal.fire({
                 icon:'error',
                 title:'Error',
@@ -235,13 +260,14 @@
           var id = $('#id').val();
           if (save_method == 'add') url = "users/add";
           else url = "users/save/" + id;
-
+          showLoad();
           $.ajax({
             url: url,
             type: form.method,
             data: $('#form-item').serialize(),
             success: function(response) {
               //alert(JSON.stringify(response));
+              hideLoad();
               Swal.fire({
                 icon: 'success',
                 title: response.message,
@@ -251,6 +277,7 @@
               })
             },
             error: function(response) {
+              hideLoad();
               var responseJSON = response.responseJSON;
               @foreach($forms as $key=>$value)
                 if(responseJSON.errors.hasOwnProperty("{{ $value['field'] }}")) {

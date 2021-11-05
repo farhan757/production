@@ -7,9 +7,6 @@
 @stop
 
 @section('content')
-<script>
-  hideLoad();
-</script>
   <div class="col-sm-12">
     <div class="card card-outline card-primary">
       <div class="card-header">
@@ -21,7 +18,7 @@
                 <div class="card-body">
                   
                     <div class="form-group row">
-                        <label for="cycle" class="col-sm-2 control-label">Tgl Dari</label>
+                        <label for="cycle" class="col-sm-2 control-label">From Date</label>
                         <div class="col-sm-4">
                             <div class="input-group date">                              
                               <input type="text" class="form-control pull-right datepicker" name="tgldari" id="tgldari" value="{{ $tgldari ?? '' }}" required>
@@ -29,7 +26,7 @@
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="cycle" class="col-sm-2 control-label">Tgl Sampai</label>
+                        <label for="cycle" class="col-sm-2 control-label">End Date</label>
                         <div class="col-sm-4">
                             <div class="input-group date">                              
                               <input type="text" class="form-control pull-right datepicker" name="tglsampai" id="tglsampai" value="{{ $tglsampai ?? '' }}" required>
@@ -78,7 +75,7 @@
                         <div class="col-sm-3">
                           <div class="card card-outline card-success">
                             <div class="card-header">
-                              <h3 class="card-title">Keterangan Invoice</h3>
+                              <h3 class="card-title">Invoice Information</h3>
                             </div>
                             <div class="card-body">
                                 <div class="form-group row">
@@ -116,7 +113,7 @@
                         <div class="col-sm-3">
                           <div class="card card-outline card-success">
                             <div class="card-header">
-                                <h3 class="card-title">Info Tambahan</h3>
+                                <h3 class="card-title">Additional Information</h3>
                             </div>
                             <div class="card-body">
                                 <div class="form-group row">
@@ -155,17 +152,14 @@
 @stop
 
 @section('css')
-  <!-- Select2 -->
-  <link rel="stylesheet" href="{{ asset('vendor/select2/css/select2.min.css') }}">
-  <link rel="stylesheet" href="{{ asset('vendor/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
+
   <script>
     hideLoad();
   </script>
 @stop
 
 @section('js')
-<!-- Select2 -->
-    <script src="{{ asset('vendor/select2/js/select2.full.min.js') }}"></script>
+
     <script>
     var rootUrl = "po";
     hideLoad();
@@ -173,7 +167,7 @@
     
     function getProject() {
         var cust_id = $('#customer_id').val();
-        var url = "../setting/master/project/getJsonByCustomer/" + cust_id;
+        var url = "../getproject/" + cust_id;
         $.ajax({
             url: url,
             type: "GET",
@@ -205,7 +199,7 @@
       $('#vload').show();
     }
 
-    function preview(){
+    function preview(key){
       var project_id = $('#project_id').val();
       var pkp = $('#pkp').is(':checked'); 
       var b_pkp = $('#b_pkp').is(':checked'); 
@@ -215,6 +209,7 @@
       var c_materai = $('#c_materai').is(':checked');
       var tgldari = $('#tgldari').val();
       var tglsampai = $('#tglsampai').val();
+      var period = $('#period').val();
       var t_ppn = 0;
       var t_materai = 0;
       if(c_ppn == true){
@@ -224,7 +219,7 @@
         t_materai = $('#t_materai').val();
       }
 
-      var param = "?project_id="+project_id+"&tgldari="+tgldari+"&tglsampai="+tglsampai+"&pkp="+pkp+"&b_pkp="+b_pkp+"&kredit="+kredit+"&tunai="+tunai+"&t_materai="+t_materai+"&t_ppn="+t_ppn;      
+      var param = "?period="+period+"&project_id="+project_id+"&tgldari="+tgldari+"&tglsampai="+tglsampai+"&pkp="+pkp+"&b_pkp="+b_pkp+"&kredit="+kredit+"&tunai="+tunai+"&t_materai="+t_materai+"&t_ppn="+t_ppn;      
       
       window.open('preview/'+param,'_blank','toolbar=yes,scrollbars=yes,resizable=yes,top=100,left=100,width=1000,height=1000')
       window.open('perincian/'+param,'_blank','toolbar=no,scrollbars=yes,resizable=yes,top=1000,left=1000,width=1000,height=1000')
@@ -245,58 +240,72 @@
           changeYear: true,
                    
           format: "MM yyyy"
-        });        
+        });       
+
       $('#form-item').submit(function(e) {
         e.preventDefault();                        
         showLoad();
         var url = "{{ route('saveinvoice') }}";
         var formData = new FormData($('#form-item')[0]);
-        $.ajax({
-            url: url,
-            type: 'POST',
-            data: formData,
-            contentType: false,
-            processData:false,
-            success: function(response) {
-              //alert(JSON.stringify(response));
-              hideLoad();
-              if(response.status==1) {
-                  Swal.fire({
-                    icon: 'success',
-                    title: response.message,
-                    onClose: () => {
-                      var nopo = $("#nopo").val();
-                      var tglpo = $("#datepicker").val();
-                      var reidretc = "{{ route('geninv') }}";
-                      //window.location.href = reidretc;
-                      window.open('generate-invoice','_blank','toolbar=yes,scrollbars=yes,resizable=yes,top=500,left=500,width=400,height=400');
-                    }
-                  });
-              } else {
-                  Swal.fire({
-                    icon: 'error',
-                    title: response.message,
-                    onClose: () => {
-                      var reidretc = "{{ route('geninv') }}";
-                      //window.location.href =reidretc;
-                      window.open('generate-invoice','_blank','toolbar=yes,scrollbars=yes,resizable=yes,top=500,left=500,width=400,height=400');
-                    }
-                  });
 
+        Swal.fire({
+          title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, Generate Invoice !'
+        }).then((result) => {
+          if (result.value){
+              $.ajax({
+              url: url,
+              type: 'POST',
+              data: formData,
+              contentType: false,
+              processData:false,
+              success: function(response) {
+                //alert(JSON.stringify(response));
+                hideLoad();
+                if(response.status==1) {
+                    Swal.fire({
+                      icon: 'success',
+                      title: response.data.no_inv,
+                      onClose: () => {
+                        var param = "?period="+response.data.period+"&project_id="+response.data.projects_id+"&tgldari="+response.data.from_date+"&tglsampai="+response.data.until_date+"&pkp="+response.data.pkp+"&b_pkp="+response.data.b_pkp+"&kredit="+response.data.kredit+"&tunai="+response.data.tunai+"&t_materai="+response.data.materai+"&t_ppn="+response.data.ppn+"&no_inv="+response.data.no_inv;      
+                        window.open('preview/'+param,'_blank','toolbar=yes,scrollbars=yes,resizable=yes,top=100,left=100,width=1000,height=1000')
+                        window.open('perincian/'+param,'_blank','toolbar=no,scrollbars=yes,resizable=yes,top=1000,left=1000,width=1000,height=1000')                                                
+                      }
+                    });
+                } else {
+                    Swal.fire({
+                      icon: 'error',
+                      title: response.message,
+                      onClose: () => {
+                        var reidretc = "{{ route('geninv') }}";
+                        //window.location.href =reidretc;
+                        
+                      }
+                    });
+
+                }
+              },
+              error: function(response) {
+                hideLoad();
+                  Swal.fire({                    
+                      icon: 'error',
+                      title: 'Error',
+                      onClose: () => {
+                        var reidretc = "{{ route('geninv') }}";
+                        window.location.href =reidretc;
+                      }
+                  });
               }
-            },
-            error: function(response) {
-              hideLoad();
-                Swal.fire({                    
-                    icon: 'error',
-                    title: 'Error',
-                    onClose: () => {
-                      var reidretc = "{{ route('geninv') }}";
-                      window.location.href =reidretc;
-                    }
-                });
-            }
-          });
+            });
+          }else{
+            hideLoad();
+          }
+        });
       });
 /*
       $("form[name='form-item']").validate({

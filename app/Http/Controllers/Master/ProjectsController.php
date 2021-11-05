@@ -16,8 +16,9 @@ class ProjectsController extends Controller
         $customers = DB::table('customers')->get();
         $this->forms = array(
             array('add'=>true,'edit'=>true,'field'=>'customer_id','desc'=>'Customer','type'=>'select','length'=>'1','mdf'=>'4','mdi'=>'6','required'=>true, 'data'=>$customers),
-            array('add'=>true,'edit'=>true,'field'=>'code','desc'=>'Kode Prooject','type'=>'text','length'=>'10','mdf'=>'4','mdi'=>'6','required'=>true),
+            array('add'=>true,'edit'=>true,'field'=>'code','desc'=>'Kode Project','type'=>'text','length'=>'10','mdf'=>'4','mdi'=>'6','required'=>true),
             array('add'=>true,'edit'=>true,'field'=>'name','desc'=>'Nama Project','type'=>'text','length'=>'100','mdf'=>'4','mdi'=>'6','required'=>true),
+            array('add'=>true,'edit'=>true,'field'=>'email','desc'=>'Email','type'=>'email','length'=>'190','mdf'=>'4','mdi'=>'6','required'=>'true'),
             array('add'=>true,'edit'=>true,'field'=>'desc','desc'=>'Description','type'=>'text','length'=>'300','mdf'=>'4','mdi'=>'6','required'=>false),
             array('add'=>true,'edit'=>true,'field'=>'active','desc'=>'Active','type'=>'checkbox','length'=>'1','mdf'=>'4','mdi'=>'6','required'=>false),
         );
@@ -27,9 +28,9 @@ class ProjectsController extends Controller
     	$list = DB::table('projects')
     	->join('customers', 'projects.customer_id','=','customers.id')
     	->select('projects.id', 'projects.code', 'projects.name' ,DB::raw('customers.name as customer_name'),'projects.active','projects.desc')
-    	->paginate(10);
+    	->get();
         $menus = DB::table('menus')->get();
-        $tasks = DB::table('task_status')->get();
+        $tasks = DB::table('task_status')->orderBy('name','asc')->get();
         $components = DB::table('components')->get();
 
         $view = view('master.project.index');
@@ -47,7 +48,8 @@ class ProjectsController extends Controller
     	$id = $request->id;
     	$code = $request->code;
     	$customer_id = $request->customer_id;
-    	$name = $request->name;
+        $name = $request->name;
+        $email = $request->email;
     	$desc = $request->desc;
     	if(isset($request->active)) $active=1; else $active=0;
 
@@ -57,7 +59,8 @@ class ProjectsController extends Controller
     		'customer_id'=>$customer_id,
     		'code'=>$code,
     		'name'=>$name,
-    		'desc'=>$desc,
+            'desc'=>$desc,
+            'email'=>$email,
     		'active'=>$active,
 			'updated_at'=>Carbon::now(),
     	]);
@@ -71,6 +74,7 @@ class ProjectsController extends Controller
     	$code = $_POST['code'];
     	$customer_id = $_POST['customer_id'];
     	$name = $_POST['name'];
+        $email = $_POST['email'];
     	$desc = $_POST['desc'];
     	if(isset($_POST['active'])) $active=1; else $active=0;
 
@@ -78,7 +82,8 @@ class ProjectsController extends Controller
     		'customer_id'=>$customer_id,
     		'code'=>$code,
     		'name'=>$name,
-    		'desc'=>$desc,
+            'desc'=>$desc,
+            'email'=>$email,
     		'active'=>$active,
 			'created_at'=>Carbon::now(),
     	]);
@@ -121,7 +126,7 @@ class ProjectsController extends Controller
 
     public function gettask($id) {
         $list = DB::table('project_to_task')
-        ->where('project_id','=',$id)
+        ->where('project_id','=',$id)        
         ->get();
 
         return response()->json($list);
@@ -161,18 +166,23 @@ class ProjectsController extends Controller
     {
         DB::table('project_to_component')->where('project_id','=',$id)->delete();
         $n=0;
-        foreach ($request->input('checkbox') as $key => $value) {
-            $sort = $request->input('sort')[$key];
-            DB::table('project_to_component')
-            ->insert([
-                'project_id'=>$id,
-                'component_id'=>$value,
-                'sort'=>$sort,
-                'created_at'=>Carbon::now(),
-                'updated_at'=>Carbon::now()
-            ]);
-            $n++;
+        if($request->input('checkbox')){
+            foreach ($request->input('checkbox') as $key => $value) {
+                $sort = $request->input('sort')[$key];
+                $price_shel = $request->input('price')[$key];
+                DB::table('project_to_component')
+                ->insert([
+                    'project_id'=>$id,
+                    'component_id'=>$value,
+                    'sort'=>$sort,
+                    'price_jual'=>$price_shel,
+                    'created_at'=>Carbon::now(),
+                    'updated_at'=>Carbon::now()
+                ]);
+                $n++;
+            }
         }
+
         return response()->json([
             'status'=>1,
             'message'=>$this->message['default']['save']['success']
@@ -182,6 +192,7 @@ class ProjectsController extends Controller
     public function getByCustomer($customer_id) {
         $sql = DB::table('projects')
         ->where('customer_id','=',$customer_id)
+        ->orderBy('name','ASC')
         ->select('id','name');
 
         $info = $this->getUserInfo();

@@ -13,7 +13,8 @@
         <h3 class="card-title">Form Upload File Data</h3>
       </div>
         <div class="card-body">
-          <table class="table table-bordered">
+        <div class="card-body table-responsive p-0" style="height: 400px;">
+            <table  class="table table-bordered table-head-fixed">
             <tr>
               <th style="width: 10px">#</th>
               <th>Ticket</th>
@@ -39,7 +40,7 @@
             @endforeach
         </table>
         {{ $list }}
-
+        </div>
         </div>
       </div>
     </div>

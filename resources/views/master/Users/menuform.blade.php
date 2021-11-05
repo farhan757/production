@@ -1,6 +1,7 @@
 <div class="modal fade" id="modal-menuform">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-lg" role="document">       
     <div class="modal-content">
+    
       <div class="modal-header">              
         <h4 class="modal-title" id="title-menuform">Menu</h4>
       </div>                     
@@ -9,13 +10,15 @@
           {{ csrf_field() }}
           <input type="hidden" name="id" id="id-menuform">
           <div class="box-body">
-            <table class="table">
+          <div class="col-xs-5 table-responsive p-0" style="height: 400px;">
+            <table class="table table-bordered table-head-fixed text-nowrap">
               <tr>
                 <th style="width: 10px">#</th>
                 <th>Name</th>
                 <th>Desc</th>
               </tr>
               @foreach($menus as $index=>$value)
+
               <tr>
                 <td>
                   <label>
@@ -51,6 +54,7 @@
               @endforeach
             </table>
           </div>
+          </div>
           <!-- /.box-body -->
           <div class="modal-footer">
                 <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
@@ -60,5 +64,6 @@
     </div>
     <!-- /.modal-content -->
   </div>
+
   <!-- /.modal-dialog -->
 </div>

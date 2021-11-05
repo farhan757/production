@@ -10,8 +10,104 @@ class DashboardController extends Controller
 {
     //
     public function show() {
-    	return view('dashboard.index');
-    }
+        
+        $view = view('dashboard.index');
+        
+        return $view;		
+	}
+    
+    public function showGrafik() {
+        $customers = $this->getCustomers();
+        $view = view('dashboard.grafik');
+        $view->with('customers',$customers);
+        return $view;		
+	}	
+	
+	public function getrange($per='year',$segment=0,$info=1, $start=null,$end=null){
+		$MONTHS = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December','Null');		
+        $query = DB::table('production_data');
+        $lb = "Printing";
+        if($info == 1){
+            $query->select(DB::raw('SUM(components_out.qty) AS jumlah'));
+        }else{
+            $lb = "Pendapatan Rp";
+            $query->select(DB::raw('SUM(components_out.qty * components_out.`component_price`) AS jumlah'));
+        }
+		
+		$query->addSelect(DB::raw('YEAR(production_data.created_at) as tahun'));
+		$query->leftJoin('components_out','components_out.job_ticket','=','production_data.job_ticket');
+		$query->leftJoin('components','components_out.component_id','=','components.id');
+        if($info == 1){
+            $query->where('components_out.group','=','jasa');
+        }
+        if($info == 1){
+            $query->where('components.name','LIKE','%printing%');
+        }
+
+		$query->where('production_data.status_warehouse','=',1);
+        if($start != null && $end != null){
+            $query->where('production_data.created_at','>=',$start.' 00:00:00')->where('production_data.created_at','<=',$end.' 23:59:59');
+        }		
+		if($segment != 0){
+			$query->where('production_data.customer_id','=',$segment);
+		}
+        if($per=='month' || $per=='day')
+        {
+            $query->addSelect(DB::raw('MONTH(production_data.created_at) as bulan'));                
+        }
+        if($per=='day')
+        {
+            $query->addSelect(DB::raw('DAY(production_data.created_at) as tanggal'));
+        }
+
+        switch ($per) {                
+            case 'day':
+                $query->groupBy('tahun','bulan','tanggal');
+                break;
+            case 'month':
+                $query->groupBy('tahun','bulan');
+                break;
+            default:
+                $query->groupBy('tahun');
+                break;
+		}	
+		$data = $query->get();
+		
+        $nwArray=array();
+        $nwArray['total']= array();
+		$nwArray['labels']= array();
+		
+		$total = 0;
+
+        foreach ($data as $key => $value) {
+            array_push($nwArray['total'], $value->jumlah);
+
+            $total = $total+$value->jumlah;
+            if($per=='month' || $per=='day') {
+                if($value->bulan==null) $bulan = "Null";
+                else {
+                    $bulan = $MONTHS[$value->bulan-1];
+                }
+            }
+            switch ($per) {
+                case 'day':
+                    array_push($nwArray['labels'], $value->tanggal."-".$bulan."-".$value->tahun);
+                    break;
+                case 'month':
+                    array_push($nwArray['labels'], $bulan."-".$value->tahun);
+                    break;                
+                default:
+                    array_push($nwArray['labels'], $value->tahun);
+                    break;
+            }
+
+        }
+
+        $nwArray['lbl_total'] = number_format($total);
+        $nwArray['lbl_info'] = $lb;
+        return response()->json($nwArray);
+	}
+
 
     public function get($type) {
     	switch ($type) {

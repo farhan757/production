@@ -29,7 +29,8 @@
                     <!-- /.box-header -->
                     <form class="form-horizontal" method="post" enctype="multipart/form-data">
                               {{ csrf_field() }}
-                    <div class="box-body">
+                    <div class="card-body table-responsive p-0" style="height: 400px;">
+                        <table  class="table table-bordered table-head-fixed">
                             <table class="table">
                             <tr>
                               <th style="width: 10px">#</th>
@@ -50,6 +51,7 @@
                             </tr>
                             @endforeach
                         </table>
+                    </div>
                     </div>
                     <!-- /.box-body -->
                     <div class="box-footer">

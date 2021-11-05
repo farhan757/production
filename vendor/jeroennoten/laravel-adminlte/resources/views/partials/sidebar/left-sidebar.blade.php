@@ -21,6 +21,18 @@
                 {{-- Configured sidebar links --}}
                 @each('adminlte::partials.sidebar.menu-item', $adminlte->menu('sidebar'), 'item')
             </ul>
+            <footer style=" position: sticky;
+                            padding-top: 15px;  
+                            left: 0;
+                            bottom: 0px;
+                            top: 50px;
+                            width: 100%;
+                            background-color: white;
+                            color: black;
+                            text-align: center;
+                            font-size: 9pt">
+                Copyright &copy 2021 printing monitoring system
+            </footer>            
         </nav>
     </div>
 

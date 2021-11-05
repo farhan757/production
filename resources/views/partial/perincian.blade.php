@@ -22,32 +22,42 @@
     <div id="perincian">
         <img src="{{ asset('assets/logo.png') }}" width="10%"></img>
         <p style="text-align: left;vertical-align: bottom; font-size: 12px;"><strong>{{ $company->name }}</strong></p>
-        <p style="font-size: 14px;" colspan="2"><br>PERINCIAN PENCETAKAN <br>PERIODE JANUARI 2021</p> 
-
+        <p style="font-size: 14px;" colspan="2"><br>PERINCIAN PENCETAKAN <br>PERIODE {{ ucfirst($period) }}</p> 
+        <p>{{ $info_product->name }}</p>
         <table>            
             <thead>
-                <td>No</td>
-                <td>Kd_app</td>
-                <td>Cycle</td>
-                <td>Pengerjaan</td>
+                <td><strong>No</strong></td>
+                <td><strong>Kd_app</strong></td>
+                <td><strong>Cycle</strong></td>
+                <!--<td>Pengerjaan</td>-->
                 <!-- looping berapa banyak component yang dipakai ? -->
                 @foreach($components_project as $value)
-                    <td>{{ $value->name }}</td>
+                    <td><strong>{{ $value->name }}</strong></td>
                 @endforeach
                 <!-- batas looping berapa banyak component yang dipakai ? -->
             </thead> 
-            
+            @php
+                $total_jml = 0;
+                $cntr=0;
+            @endphp
             @inject('comp_out','App\Http\Controllers\Adm\GenController')
             
             <tbody>
                 @foreach($production_data as $value)
+                @php
+                    $cntr++;
+                @endphp
                     <tr>
-                        <td>{{ ($production_data->perPage()*($production_data->currentPage()-1)) +$loop->iteration }}</td>
-                        <td>{{ $value->name }}</td>
+                        <td>{{ $cntr }}</td>
+                        <td>{{ $value->code }}</td>
                         <td>{{ $value->cycle }}/{{ $value->jenis }}/{{ $value->part }}</td>
-                        <td>{{ $value->jml }}</td>
+                        <!--<td>{{ $value->jml }}</td>-->
+                        @php
+                            $total_jml = $total_jml+$value->jml;
+                        @endphp
                         <!-- looping berapa banyak percomponent yang dipakai ? -->
-                        @php 
+                        @php
+                            $components ="";
                             $components = $comp_out->getComponentsByticket($value->job_ticket);
                         @endphp
 
@@ -59,11 +69,11 @@
                 @endforeach
             </tbody>   
             <tfoot>
-                <td colspan="3" >Jumlah</td>
-                <!-- looping total percomponent yang dipakai ? -->
-
+                <td colspan="3" align="center"><strong>Jumlah</strong></td>
+                <!--<td>{{ $total_jml }}</td>-->
+                <!-- looping total percomponent yang dipakai ? -->                
                 @foreach($total_perinci as $valu)
-                    <td>{{ $valu->jml }}</td>
+                    <td><strong>{{ $valu->jml }}</strong></td>
                 @endforeach
                 <!-- looping total percomponent yang dipakai ? -->
             </tfoot>    

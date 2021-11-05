@@ -24,7 +24,7 @@ class CustomersController extends Controller
 
     );
     public function index() {
-    	$list = DB::table('customers')->paginate(10);
+    	$list = DB::table('customers')->orderBy('id','DESC')->paginate(10);
         $view = view('master.customer.index')->with('list',$list);
         $view->with('forms',$this->forms);
 

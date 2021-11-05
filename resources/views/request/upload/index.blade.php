@@ -37,7 +37,7 @@
                         <label for="project" class="col-sm-2 control-label">Project</label>
 
                         <div class="col-sm-4">
-                            <select class="form-control" name="project_id" id="project_id" required>                                        
+                            <select class="form-control select2" name="project_id" id="project_id" required>                                        
                               </select>
                         </div>
                     </div>
@@ -56,7 +56,7 @@
                         <label for="part" class="col-sm-2 control-label">Part</label>
 
                         <div class="col-sm-4">
-                            <select class="form-control" name="part" required>
+                            <select class="form-control select2" name="part" required>
                                 @foreach($parts as $key=>$value)
                                 <option value="{{ $value->code }}">{{ $value->name }}</option>
                                 @endforeach
@@ -68,7 +68,7 @@
                         <label for="jenis" class="col-sm-2 control-label">Jenis</label>
 
                         <div class="col-sm-4">
-                            <select class="form-control" name="jenis" required>
+                            <select class="form-control select2" name="jenis" required>
                                 @foreach($jenis as $key=>$value)
                                 <option value="{{ $value->code }}">{{ $value->name }}</option>
                                 @endforeach
@@ -80,7 +80,7 @@
                         <label for="method" class="col-sm-2 control-label">Method</label>
 
                         <div class="col-sm-4">
-                            <select onchange="setMethod()" class="form-control" name="method_id" id="method_id" required>
+                            <select onchange="setMethod()" class="form-control select2" name="method_id" id="method_id" required>
                                 <option value="1">Upload</option>
                                 <option value="2">FTP</option>
                                 <option value="3">Other</option>
@@ -163,16 +163,17 @@
         var divNote = document.getElementById("divNote");
         var file = document.getElementById("file");
         if(e == "1") {
-            divFile.style.display="block"
+            divFile.style.visibility="inherit";
             file.setAttribute("required", "");
             file.required = true;                          
         } else {
-            divFile.style.display="none";
+            divFile.style.visibility="hidden";
             file.removeAttribute("required");  
                     }
     }
 
-    $(function(){      
+    $(function(){ 
+      $('.select2').select2();     
       $('#datepicker').datepicker({
           autoclose: true,
           format: "yyyymmdd"

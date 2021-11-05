@@ -13,7 +13,8 @@
         <h3 class="card-title">List to download file</h3>
       </div>
       <div class="card-body">
-        <table class="table table-bordered">
+      <div class="card-body table-responsive p-0" style="height: 400px;">
+            <table  class="table table-bordered table-head-fixed">
             <tr>
               <th style="width: 10px">#</th>
               <th>Ticket</th>
@@ -31,11 +32,15 @@
               <td>{{ $value->status_name }}</td>
               <td>
                 <a href="#" title="view detail" onclick="showDetail({{ $value->id }})" class="text-info"><i class="fas fa-eye"></i></a>&nbsp;
-                <a title="download" href="download/get/{{ $value->id }}" class="text-success"><i class="fa fa-download"></i></a></td>
+                @if($value->method_id == 1)
+                  <a title="download" href="download/get/{{ $value->id }}" class="text-success"><i class="fa fa-download"></i></a>
+                @endif
+                </td>
             </tr>
             @endforeach
         </table>
         {{ $list }}
+      </div>
         </div>
     </div>
 </div>

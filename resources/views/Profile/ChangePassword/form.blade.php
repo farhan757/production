@@ -26,7 +26,7 @@
                     <form class="form-horizontal" method="post">
                         {{ csrf_field() }}
                         <div class="form-group">
-                          <label for="current-password" class="col-sm-4 control-label">Password Lama</label>
+                          <label for="current-password" class="col-sm-4 control-label">Old Password</label>
                           <div class="col-sm-6">
                               <input type="password" name="current-password" class="form-control" id="current-password" placeholder="Old Password">
                             </div>
@@ -34,13 +34,13 @@
                             
                           <br>
                         <div class="form-group">
-                          <label for="password" class="col-sm-4 control-label">Password Baru</label>
+                          <label for="password" class="col-sm-4 control-label">New Password</label>
                           <div class="col-sm-6">
                               <input type="password" name="password" class="form-control" id="password" placeholder="New Password">
                             </div>
                           </div>
                         <div class="form-group">
-                          <label for="password_confirmation" class="col-sm-4 control-label">Ulangi Password Baru</label>
+                          <label for="password_confirmation" class="col-sm-4 control-label">Retype New Password</label>
                           <div class="col-sm-6">
                               <input type="password" name="password_confirmation" class="form-control" id="password_confirmation" placeholder="Retype New Password">
                             </div>

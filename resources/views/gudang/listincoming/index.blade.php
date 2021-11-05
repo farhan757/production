@@ -30,8 +30,8 @@
               </div>
             </div>
           </form>
-          <div class="col-xs-5 table-responsive">
-          <table class="table table-bordered">
+          <div class="card-body table-responsive p-0" style="height: 400px;">
+            <table  class="table table-bordered table-head-fixed">
               <tr>
                 <th style="width: 10px">#</th>
                 <th>No PO</th>
@@ -100,8 +100,8 @@
                     </div>                                        
                         <input type="hidden" name="nopo" id="nopo" value="{{ $value->no_po }}">                    
                         <div class="row">
-                          <div class="col-xs-5 table-responsive">
-                            <table class="table table-bordered">
+                        <div class="card-body table-responsive p-0" style="height: 400px;">
+                          <table  class="table table-bordered table-head-fixed">
                               <thead>
                                 <tr>
                                     <th>Kode</th>

@@ -21,7 +21,7 @@
               </div>
               <div class="col-sm-2">
                   <div class="input-group date">                                      
-                    <input type="text" class="form-control pull-right" name="filterCycle" id="filterCycle" placeholder="Cycle" value="{{ $filterCycle ?? '' }}">
+                    <input type="text" class="form-control pull-right" name="filterCycle" id="filterCycle" placeholder="Cycle" value="{{ $cycle ?? '' }}">
                   </div>
               </div>
               <div class="col-md-2">
@@ -30,8 +30,8 @@
               </div>
             </div>
           </form>
-
-          <table class="table table-bordered">
+          <div class="card-body table-responsive p-0" style="height: 400px;">
+            <table  class="table table-bordered table-head-fixed">
               <tr>
                 <th style="width: 10px">#</th>
                 <th>Time submit</th>
@@ -39,6 +39,7 @@
                 <th>Cycle/Part</th>
                 <th>Project</th>
                 <th>Status</th>
+                <th>Total Data</th>
                 <th>Action</th>
               </tr>
               @foreach($list as $index=>$value)
@@ -49,14 +50,16 @@
                 <td>{{ $value->cycle }} / {{ $value->part }}</td>
                 <td>{{ $value->project_name }}</td>
                 <td>{{ $value->status_name }} / {{ $value->result_name }}</td>
+                <td>{{ $value->jml_data }}</td>
                 <td> 
-                <a onclick="showDetail({{ $value->id }})" class="text-info"><i class="fas fa-eye"></i></a>&nbsp;
-                <a onclick="showFormUpdate({{ $value->id }})" class="text-warning"><i class="far fa-check-square"></i></a>
+                <a href="#" title="Detail" onclick="showDetail({{ $value->id }})" class="text-info"><i class="fas fa-eye"></i></a>&nbsp;
+                <a href="#" title="Form Update" onclick="showFormUpdate({{ $value->id }})" class="text-warning"><i class="far fa-check-square"></i></a>
                 </td>
               </tr>
               @endforeach
           </table>
           {{ $list }}
+          </div>
         </div>
     </div>
 </div>
@@ -68,7 +71,7 @@
 <script type="text/javascript">
     var rootUrl = 'gudang';
     var curentId;
-    $('#btn_material').css('visibility', 'visible');
+    
 
     function hideError() {
 
@@ -76,11 +79,21 @@
 
     function clearFilter() {
       $('#ticket').val('');
-      $('#cycle').val('');
+      $('#filterCycle').val('');
+    }
+
+    function hideLoad(){
+      $('#vload').hide();
+    }
+
+
+    function showLoad(){
+      $('#vload').show();
     }
 
     function showFormUpdate(id) {
       hideError();
+      hideLoad();
       $('input[name=_method]').val('POST');
       $('#modal-form').modal('show');
       $('#modal-form form')[0].reset();
@@ -91,6 +104,7 @@
     function showDetail(id) {
       currentId = id;      
       var uri = "{{ route('joblistdetail',':currentId') }}";
+
       $.ajax({
           url: uri.replace(':currentId', currentId),
           type: "POST",
@@ -207,6 +221,7 @@
         e.preventDefault();
         var url = "{{ route('updateappmaterial') }}";
           var formData = new FormData($('#form-status')[0]);
+          showLoad();
           $.ajax({
             url: url,
             type: 'POST',
@@ -215,6 +230,7 @@
             processData:false,
             success: function(response) {
               //alert(JSON.stringify(response));
+              hideLoad();
               if(response.status==1) {
                   Swal.fire({
                     icon: 'success',
@@ -223,6 +239,7 @@
                       window.location.reload();
                     }
                   });
+                  //console.log(response);
               } else {
                   if(response.status==2) {
                     var errors = '';
@@ -234,22 +251,26 @@
                       title: response.message + " " + response.error,
                       text: errors
                     });
+                    //console.log(response);
                   } else {
                     Swal.fire({
                       icon: 'error',
                       title: response.message,
                       onClose: () => {
                         //window.location.href = '{{ route('requestincomingdata') }}';
-                      }
-                    });                    
+                      }                      
+                    });
+                    //console.log(response);                    
                   }
               }
             },
             error: function(response) {
+              hideLoad();
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
                 });
+                //console.log(response);
             }
           });
       });

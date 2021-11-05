@@ -6,7 +6,7 @@
     <title>Invoice {{ $customer->name }} | {{ $nama_product }}</title>  
     <style>
         .border-putus {
-          border-bottom: 2px dotted black;
+          border-bottom: 2px dotted black
         }    
     </style>    
 </head>
@@ -21,7 +21,7 @@
                 <td style="font-size: 18px; border: 1px solid black; " colspan="2"><strong>FAKTUR</strong></td>
             </tr>        
             <tr>
-                <td style="border-bottom: 2px solid black; font-size: 14px;" colspan="2"><br>No.</td>            
+                <td style="border-bottom: 2px solid black; font-size: 14px;" colspan="2"><br>No. {{ $noinv ?? 'PREVIEW' }}</td>            
             </tr>        
         </table>
         <table  style="width: 595px; columns:3;">
@@ -39,18 +39,18 @@
                 <tr>
                     <td style="vertical-align: text-top; width: 20%; font-size: 12px;" class="border-putus">NPWP</td>
                     <td style="vertical-align: text-top; width: 5px; font-size: 12px;" >:</td>
-                    <td style="vertical-align: text-top; width: 400px; font-size: 12px;" class="border-putus">807739297018000</td>
+                    <td style="vertical-align: text-top; width: 400px; font-size: 12px;" class="border-putus">{{ $customer->npwp }}</td>
                 </tr>             
             </tbody>                                   
         </table>
         <table  style="width: 200px; font-size: 14px;position: relative; left: 395px; ">
             <tr>
-                <td style="width: 10%;" class="border-putus"><input type="checkbox" @if($pkp == 'true') checked @endif> PKP</td> 
-                <td style="width: 10%;" class="border-putus"><input type="checkbox" @if($bkn_pkp == 'true') checked @endif> Bukan PKP</td>           
+                <td style="width: 10%;" class="border-putus"><input type="checkbox" @if($pkp == 'true' || $pkp == 1) checked @endif> PKP</td> 
+                <td style="width: 10%;" class="border-putus"><input type="checkbox" @if($bkn_pkp == 'true' || $bkn_pkp == 1) checked @endif> Bukan PKP</td>           
             </tr>
             <tr>
-                <td style="width: 15%;" class="border-putus"><input type="checkbox" @if($tunai == 'true') checked @endif> Tunai</td> 
-                <td style="width: 20%;" class="border-putus"><input type="checkbox" @if($kredit == 'true') checked @endif> Kredit</td>           
+                <td style="width: 15%;" class="border-putus"><input type="checkbox" @if($tunai == 'true' || $tunai == 1) checked @endif> Tunai</td> 
+                <td style="width: 20%;" class="border-putus"><input type="checkbox" @if($kredit == 'true' || $kredit == 1) checked @endif> Kredit</td>           
             </tr>        
         </table> 
         <br>
@@ -141,10 +141,10 @@
                 <tr>
                     <td rowspan="4" colspan="2" style="border: 1px solid black; border-collapse: collapse; font-size: 12px; text-align: center;">
                         Syarat Pembayaran :<br>
-                        Mohon Pembayaran di transfer<br>
-                        ke : PT. Tata Layak Prawira<br>
-                        Bank Danamon - Bogor Juanda<br>
-                        No. Rek. : 0104332010</td>                
+                        Mohon Pembayaran ditransfer<br>
+                        ke : {{ $company->name }}<br>
+                        Bank {{ $company->bank }} - {{ $company->cbg_bank }}<br>
+                        No. Rek. : {{ $company->norek }}</td>                
                     <td colspan="2" style="border: 1px solid black; border-collapse: collapse; font-size: 12px;">Jumlah harga jual</td>
                     <td style="border: 1px solid black; border-collapse: collapse; font-size: 12px; text-align: right;">@currency($jumlahtotal)</td>
                 </tr>
@@ -158,14 +158,17 @@
                         @currency($ppn)
                     @endif
                     </td>
-                </tr>
-                @php
-                    $materai = $t_materai;
-                @endphp                 
+                </tr>                
                 <tr>
                     <td colspan="2" style="border: 1px solid black; border-collapse: collapse; font-size: 12px;">Materai</td>
                     <td style="border: 1px solid black; border-collapse: collapse; font-size: 12px; text-align: right;">
-                    @if($t_materai != 0) 
+                    @php
+                        $materai = 0;
+                    @endphp
+                    @if($jumlahtotal >= 5000000) 
+                        @php
+                            $materai = 10000;
+                        @endphp
                         @currency($materai)
                     @endif                            
                     </td>
@@ -208,16 +211,16 @@
         <table  style="width: 200px; font-size: 14px;position: absolute; left: 395px; ">
             <tr>
                 
-                <td style="width: 10%; text-align: center; font-size: 12px;"><br>Jakarta, 11 Januari 2021</td>                      
+                <td style="width: 10%; text-align: center; font-size: 12px;"><br>Jakarta, {{ date('d F Y') }}</td>                      
             </tr>
             <tr>            
-                <td style="width: 15%; text-align: center; font-size: 12px;"><br><br><br><strong><u>Bag. Admin/Bag. Keu</u></strong></td>                       
+                <td style="width: 15%; text-align: center; font-size: 12px;"><br><br><br><strong><u>Suwarto</u></strong></td>                       
             </tr>        
         </table>  
         
         <table  style="width: 200px; font-size: 14px;position: relative; left: 12px; ">
             <tr>                
-                <td><img src="https://chart.googleapis.com/chart?cht=qr&chl=Hello+World&chs=80x80&chld=L|0"/></td>                      
+                <td><img src="https://chart.googleapis.com/chart?cht=qr&chl={{ $noinv ?? '' }}&chs=80x80&chld=L|0"/></td>                      
             </tr>      
         </table>         
         

@@ -46,7 +46,7 @@
                                 <label for="project" class="col-sm-2 control-label">Project</label>
 
                                 <div class="col-sm-4">
-                                    <select class="form-control" name="project_id" id="project_id" >
+                                    <select class="form-control select2" name="project_id" id="project_id" >
                                       <option value="0">All</option>
                                         @foreach($projects as $index=>$value)
                                         <option value="{{ $value->id }}" 
@@ -75,7 +75,7 @@
                                 <label for="part" class="col-sm-2 control-label">Part</label>
 
                                 <div class="col-sm-4">
-                                    <select class="form-control" name="part" >
+                                    <select class="form-control select2" name="part" >
                                         <option value="0">All</option>
                                         @foreach($parts as $key=>$value)
                                         <option value="{{ $value->code }}"
@@ -94,7 +94,7 @@
                                 <label for="jenis" class="col-sm-2 control-label">Jenis</label>
 
                                 <div class="col-sm-4">
-                                    <select class="form-control" name="jenis" >
+                                    <select class="form-control select2" name="jenis" >
                                         <option value="0">All</option>
                                         @foreach($jeniss as $key=>$value)
                                         <option value="{{ $value->code }}"
@@ -132,7 +132,8 @@
                           </div>
                         </form>
                       </div>
-                        <table class="table table-bordered">
+                      <div class="card-body table-responsive p-0" style="height: 400px;">
+                        <table  class="table table-bordered table-head-fixed">
                             <tr>
                               <th style="width: 10px">#</th>
                               <th>Kode</th>
@@ -151,6 +152,7 @@
                             @endforeach
                         </table>
                         {{ $list }}
+                      </div>
                     </div>
                     <!-- /.box-body -->
                 </div>
@@ -163,6 +165,7 @@
 @section('js')
 <script type="text/javascript">
     $(function () {
+      $('.select2').select2();
         $('#start_date').datepicker({
           autoclose: true,
           format: "yyyy/mm/dd"

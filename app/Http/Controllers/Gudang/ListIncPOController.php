@@ -89,7 +89,7 @@ class ListIncPOController extends Controller
                         DB::table('incoming_components_detail')
                             ->where('id','=',$value)->where('incoming_components_po','=',$nopo)
                             ->increment('qty_arrive',$qty_in);
-                        echo "Berhasil masuk comp detail </br>";
+                        
 
                         $components = $this->getComponents($status->components_id);
                         DB::table("components_in")->insert([
@@ -111,13 +111,10 @@ class ListIncPOController extends Controller
             }
             $statusnya = DB::table("incoming_components_detail")->where('incoming_components_po','=',$nopo)->where('complete',0)->count();
             if($statusnya == 0){
-                DB::table('incoming_components')->where('no_po','=',$nopo)->update(['complete'=>1]);
-                echo "Berhasil masuk comp </br> $statusnya";
-            } 
-        
-            echo "Berhasil masuk comp </br> $statusnya";
+                DB::table("incoming_components")->where("no_po","=",$nopo)->update(['complete' => 1]);
+            }
 
-            if($request->file('file')->isValid()){
+            if($request->hasFile('file')){
                 $file=$request->file('file');
                 $fileName = $file->getClientOriginalName();
                 $pathFile = $this->uploadPO.DIRECTORY_SEPARATOR.$nopo;

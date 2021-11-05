@@ -1,14 +1,16 @@
 @extends('layouts.print')
 
 @section('content')
+@inject('pt','App\Http\Controllers\Controller')
 <div class="row">
       <div class="col-12">
-        <h2 class="page-header">
-            <img src="{{ asset('img') }}/logowhite.png">
+        <h4 class="page-header">
+            <img src="{{ asset('img') }}/logowhite.png" width="35%"><br><br>
                     <div class="mx-auto">Purchase Order </div>
-                    PT. Tata Layak Prawira
+                    {{ $pt->company()->name }}
           <small class="float-right" id="date"></small>
-        </h2>
+        </h4>
+        <br>
       </div>
       <!-- /.col -->
     </div>

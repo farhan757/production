@@ -35,7 +35,9 @@
     @else
         <link rel="stylesheet" href="{{ mix(config('adminlte.laravel_mix_css_path', 'css/app.css')) }}">
     @endif
-    
+        <link rel="icon" href="{{ asset('favicon.ico') }}">
+        <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+        
     {{-- Custom Stylesheets (post AdminLTE) --}}
     @yield('adminlte_css')
 
@@ -86,7 +88,7 @@
 
     {{-- Custom Scripts --}}
     @yield('adminlte_js')
-
+    
 </body>
 
 </html>

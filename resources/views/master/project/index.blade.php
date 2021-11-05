@@ -20,17 +20,22 @@
                 </button>
               </div>
             </div>
-            <table class="table table-bordered">
+            <div class="card-body table-responsive p-0" style="height: 400px;">
+            <table  class="table table-bordered table-head-fixed" id="proj">
+                <thead>
                 <tr>
-                  <th style="width: 10px">#</th>
+                  
                   <th>Customer</th>
                   <th>Kode</th>
-                  <th>Nama</th>
+                  <th>Name</th>
                   <th>Action</th>
                 </tr>
+                </thead>
+              <tbody>
+              
                 @foreach($list as $index=>$value)
                 <tr>
-                  <td>{{ ($list->perPage()*($list->currentPage()-1)) +$loop->iteration }}</td>
+                  
                   <td>{{ $value->customer_name }}</td>
                   <td>{{ $value->code }}</td>
                   <td>{{ $value->name }}</td>
@@ -43,9 +48,10 @@
                   </td>
                 </tr>
                 @endforeach
+              </tbody>
             </table>
-            {{ $list }}
-
+            
+          </div>
 			</div>
 		</div>
 	</div>
@@ -57,10 +63,11 @@
 @stop
 
 @section('css')
+  
 @stop
 
 @section('js')
-    <script>
+  <script>
     var rootUrl = 'projects';
 
     function hideError() {
@@ -116,6 +123,7 @@
                 var obj = data[i];
                 $("#comp-checkbox-"+obj.component_id).prop( "checked", true);
                 $("#comp-sort-checkbox-"+obj.component_id).val(obj.sort);
+                $("#comp-price-checkbox-"+obj.component_id).val(obj.price_jual);
               }
          },
           error : function() {
@@ -250,13 +258,29 @@
     }
 
     $(function(){
+
+      var table2 = $('#example').DataTable(
+        {
+          "bPaginate": false,
+        }
+      );
+
+      var table = $('#proj').DataTable(
+        {
+          "bPaginate": true,
+        }
+      );      
+
+      $('#submit-comp').click(function() { 
+        table2.search('').draw();
+      });
+
       $("form[name='form-component']").validate({
-        rules: {
-        },
+
         submitHandler: function(form) {
           var id = $('#id-component').val();
           var url = rootUrl + "/savecomponent/" + id;
-
+          table2.search('').draw();         
           $.ajax({
             url: url,
             type: form.method,

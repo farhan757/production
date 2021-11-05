@@ -30,6 +30,7 @@
                     <form class="form-horizontal" method="post" enctype="multipart/form-data">
                               {{ csrf_field() }}
                     <div class="box-body">
+                    <div class="col-xs-5 table-responsive">
                             <table class="table">
                             <tr>
                               <th style="width: 10px">#</th>
@@ -54,6 +55,7 @@
                             </tr>
                             @endforeach
                         </table>
+                      </div>
                     </div>
                     <!-- /.box-body -->
                     <div class="box-footer">

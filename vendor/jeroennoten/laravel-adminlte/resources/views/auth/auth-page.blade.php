@@ -10,7 +10,7 @@
 
 @section('adminlte_css')
     @stack('css')
-    @yield('css')
+    @yield('css')  
 @stop
 
 @section('classes_body'){{ ($auth_type ?? 'login') . '-page' }}@stop

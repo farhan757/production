@@ -1,5 +1,8 @@
 <div class="modal fade" id="modal-form">
     <div class="modal-dialog modal-lg">
+
+    <div class="overlay-wrapper"> 
+       <div class="overlay dark" id="vload" ><i class="fas fa-5x fa-sync-alt fa-spin"></i>&nbsp; &nbsp; &nbsp;<div class="text-bold pt-2" type="hide">Loading...</div></div>        
         <div class="modal-content">
             <div class="modal-header">
               <h4 class="modal-title" id="modal-title">Form Customer</h4>
@@ -36,6 +39,7 @@
             </div>
             </form>
         </div>
+    </div>
     </div>
 </div>
 

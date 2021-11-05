@@ -6,6 +6,7 @@ use Auth;
 use DB;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
+use Exception;
 use Illuminate\Http\Request;
 
 class POMaterialController extends Controller
@@ -22,7 +23,7 @@ class POMaterialController extends Controller
 			->leftJoin('components','components.id','=','incoming_components_detail.components_id')
 			->select('incoming_components_detail.id','incoming_components_detail.incoming_components_po','components.name','incoming_components_detail.qty_order','components.code')
 			->where('incoming_components_detail.complete','=',0)
-			->where('incoming_components_po','=',$request->input('nopo'))->paginate(5);	
+			->where('incoming_components_po','=',$request->input('nopo'))->get();	
 			$view->with('list',$comp_detail);
 			$view->with('nopo',$request->input('nopo'));
 			$view->with('tglpo',$request->input('tglpo'));
@@ -34,6 +35,13 @@ class POMaterialController extends Controller
 
     } 
     
+    public function addform(Request $request)
+    {
+        # code...
+		$components = $this->getComponents();
+        return view('po.createpo.add_dua')->with('no', $request->input('id'))->with('components', $components);
+    }
+
     public function upload(Request $request){
     	$user = Auth::user();
 
@@ -45,41 +53,63 @@ class POMaterialController extends Controller
     	$tglpo = $request->input('tglpo');
     	$info = $request->input('note');
         $vendor_id = $request->input('vendor_id');
-		$components_id = $request->input('components_id');
-		$qty = $request->input('qty');
-
-		$components = $this->getComponents($components_id);
-
-        if(DB::table('incoming_components')->where([
-            ['no_po','=',$nopo]
-        ])->exists() == false){
-            DB::table('incoming_components')->insert([
-                'no_po' => $nopo,
-                'vendor_id' => $vendor_id,
-                'input_id' => $user->id,
-                'tgl_po' => $tglpo
-            ]);
-        }
-
-    	$id = DB::table('incoming_components_detail')
-    	->insertGetId([
-    		'incoming_components_po'=>$nopo,
-    		'components_id'=>$components_id,
-    		'components_price'=>$components->price_beli,
-    		'qty_order'=>$qty,
-            'created_at'=>Carbon::now(),
-            'updated_at'=>Carbon::now()
-    	]);
-		
-    	return response()->json([
-            'status'=>1,
-            'message'=>$this->message['default']['add']['success']
-        ]);
+		DB::beginTransaction();
+		try{
+			DB::table('incoming_components')->insert([
+				'no_po' => $nopo,
+				'vendor_id' => $vendor_id,
+				'input_id' => $user->id,
+				'tgl_po' => $tglpo
+			]);
+	
+			for($i=0; $i < count($request->qty); $i++){
+				$components_id = $request->components_id[$i];
+				$qty = $request->qty[$i];
+				$components = $this->getComponents($components_id);
+				$id = DB::table('incoming_components_detail')
+				->insertGetId([
+					'incoming_components_po'=>$nopo,
+					'components_id'=>$components_id,
+					'components_price'=>$components->price_beli,
+					'qty_order'=>$qty,
+					'created_at'=>Carbon::now(),
+					'updated_at'=>Carbon::now()
+				]);
+			}
+			DB::commit();
+			return response()->json([
+				'status'=>1,
+				'message'=>$this->message['default']['add']['success']
+			]);
+		}catch(Exception $e){
+			DB::rollBack();
+			return response()->json([
+				'status'=>2,
+				'message'=>$this->message['default']['add']['error']
+			]);
+		}	
     }
 
 	public function delete(Request $request){
 
-		DB::table('incoming_components_detail')->where('id','=',$request->id)->delete();
+		try{
+			DB::table('incoming_components_detail')->where('id','=',$request->id)->delete();
+			return response()->json([
+				'status'=>1,
+				'message'=>'ok'
+			]);	
+		}catch(Exception $e){
+			return response()->json([
+				'status'=>2,
+				'message'=>$e
+			]);	
+		}	
+	
+	}
+
+    public function batal(Request $request){
+
+		DB::table('incoming_components')->where('no_po','=',$request->id)->delete();
 
     	return response()->json([
             'status'=>1,

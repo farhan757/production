@@ -8,7 +8,7 @@ use JeroenNoten\LaravelAdminLte\Events\BuildingMenu;
 use JeroenNoten\LaravelAdminLte\Helpers\LayoutHelper;
 use JeroenNoten\LaravelAdminLte\Helpers\MenuItemHelper;
 use JeroenNoten\LaravelAdminLte\Menu\Builder;
-
+use Auth;
 class AdminLte
 {
     /**
@@ -57,6 +57,7 @@ class AdminLte
      */
     public function __construct(array $filters, Dispatcher $events, Container $container)
     {
+        
         $this->filters = $filters;
         $this->events = $events;
         $this->container = $container;
@@ -69,6 +70,10 @@ class AdminLte
             'navbar-right' => [$this, 'navbarRightFilter'],
             'navbar-user'  => [$this, 'navbarUserMenuFilter'],
         ];
+
+        if(Auth::user()){
+            return redirect()->to('/');
+        }
     }
 
     /**

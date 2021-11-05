@@ -15,8 +15,9 @@ class DownloadController extends Controller
     	$list = DB::table('incoming_data')
     	->leftJoin('projects','projects.id','=','incoming_data.project_id')
     	->leftJoin('task_status','task_status.id','=','incoming_data.current_status_id')
-    	->select('incoming_data.id',DB::raw('projects.name as project_name'),'incoming_data.file_name', 'incoming_data.ticket', 'file_name', DB::raw('task_status.name as status_name'))
-		->where('incoming_data.next_status_id','=',$this->downloadTaskId)		
+    	->select('incoming_data.method_id','incoming_data.id',DB::raw('projects.name as project_name'),'incoming_data.file_name', 'incoming_data.ticket', 'file_name', DB::raw('task_status.name as status_name'))
+		->where('incoming_data.next_status_id','=',$this->downloadTaskId)	
+		->orderBy('id','DESC')	
     	->paginate(10);
 
     	return view('request.download.index')->with('list',$list);

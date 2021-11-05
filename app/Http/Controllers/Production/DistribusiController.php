@@ -18,29 +18,51 @@ class DistribusiController extends Controller
     public function index(Request $request) {
     	$sql = DB::table('manifest')
     	->leftJoin('production_data','production_data.id','=','manifest.production_id')
+        ->leftjoin('production_data_detail','production_data_detail.no_manifest','=','manifest.no_manifest')
         ->leftJoin('projects','projects.id','=','production_data.project_id')
         ->leftJoin('customers','customers.id','=','projects.customer_id')
-    	->select(DB::raw('projects.name as project_name, customers.name as customer_name'), 'manifest.no_manifest', 'manifest.cycle', 'manifest.part','manifest.ekspedisi','manifest.service','manifest.print', 'manifest.created_at', 'manifest.tgl_kirim')
-    	->orderBy('print','asc')
-        ->orderBy('tgl_kirim', 'desc');
+    	->select('production_data.job_ticket',DB::raw('projects.name as project_name, customers.name as customer_name'), 'manifest.no_manifest', 'manifest.cycle', 'manifest.part','manifest.ekspedisi','manifest.service','manifest.print', 'manifest.created_at', 'manifest.tgl_kirim')
+    	->addselect(DB::raw('count(manifest.no_manifest) as jml_data'))       
+        ->orderBy('manifest.production_id','desc')
+        //->orderBy('tgl_kirim', 'desc')
+        ->groupBy('manifest.no_manifest');
         $ticket = $request->ticket;
         $no_manifest = $request->no_manifest;
         $cycle = $request->cycle;
+        $project_id = $request->project_id;
+
+        $bf2 = date('Y-m-d',strtotime('-3 days',strtotime(now())));
+		$now = date('Y-m-d',strtotime(now()));
+
+		//if(!$this->check($ticket) && !$this->check($cycle))
+			//$sql->where('manifest.created_at', '>=', $bf2.' 00:00:00')->where('manifest.created_at','<=',$now.' 23:59:59');
 
         if($this->check($ticket))
-            $sql->where('production_data.job_ticket','=',$ticket);
+            $sql->where('production_data.job_ticket','like','%'.$ticket.'%');
         if($this->check($cycle))
             $sql->where('production_data.cycle','=',$cycle);
         if($this->check($no_manifest))
             $sql->where('manifest.no_manifest','=',$no_manifest);
+        if($this->check2($project_id))
+            $sql->where('production_data.project_id','=',$project_id);
 
         $list = $sql->paginate(10);
+
+        $project = DB::table('production_data')
+                    ->join('projects','projects.id','=','production_data.project_id')
+                    ->orderBy('projects.name','ASC')
+                    ->groupBy('production_data.project_id')->get();
 
         $view = view('production.distribusi.index');
         $view->with('list',$list); 
         $view->with('ticket',$ticket);
         $view->with('cycle',$cycle);
         $view->with('no_manifest',$no_manifest);
+        $info = $this->getUserInfo();
+        $view->with('level',$info->level);
+        $view->with('project',$project);
+        $view->with('project_id',$project_id);
+
         if(isset($_GET['info'])) $view->with('info',$_GET['info']);
         if(isset($_GET['error'])) $view->with('error', $_GET['error']);
         return $view;
@@ -59,7 +81,8 @@ class DistribusiController extends Controller
     	->where('no_manifest','=',$no_manifest)
     	->update([
             'tgl_kirim'=>$request->tgl_kirim,
-            'nama_kurir'=>$request->nama_kurir
+            'nama_kurir'=>$request->nama_kurir,
+            'created_by' => Auth::id()
         ]);
 
         return response()->json([
@@ -106,11 +129,13 @@ class DistribusiController extends Controller
         $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Alamat1');
         $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Alamat2');
         $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Alamat3');
-        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Kota');
-        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Kode Pos');
-        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'Telp');
-        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Ekspedisi');
-        $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Serivice');
+        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Alamat4');
+        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Alamat5');        
+        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'Kota');
+        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Kode Pos');
+        $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Telp');
+        $objPHPExcel->getActiveSheet()->SetCellValue('L1', 'Ekspedisi');
+        $objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Serivice');
         $row=0;
         foreach ($list as $key => $value) {
             $row++;
@@ -121,11 +146,13 @@ class DistribusiController extends Controller
             $objPHPExcel->getActiveSheet()->SetCellValue('D'.($row+1), $value->address1);
             $objPHPExcel->getActiveSheet()->SetCellValue('E'.($row+1), $value->address2);
             $objPHPExcel->getActiveSheet()->SetCellValue('F'.($row+1), $value->address3);
-            $objPHPExcel->getActiveSheet()->SetCellValue('G'.($row+1), $value->city);
-            $objPHPExcel->getActiveSheet()->SetCellValue('H'.($row+1), $value->pos);
-            $objPHPExcel->getActiveSheet()->SetCellValue('I'.($row+1), $value->telp);
-            $objPHPExcel->getActiveSheet()->SetCellValue('J'.($row+1), $value->ekspedisi);
-            $objPHPExcel->getActiveSheet()->SetCellValue('K'.($row+1), $value->service);    
+            $objPHPExcel->getActiveSheet()->SetCellValue('G'.($row+1), $value->address4);
+            $objPHPExcel->getActiveSheet()->SetCellValue('H'.($row+1), $value->address5);            
+            $objPHPExcel->getActiveSheet()->SetCellValue('I'.($row+1), $value->city);
+            $objPHPExcel->getActiveSheet()->SetCellValue('J'.($row+1), $value->pos);
+            $objPHPExcel->getActiveSheet()->SetCellValue('K'.($row+1), $value->telp);
+            $objPHPExcel->getActiveSheet()->SetCellValue('L'.($row+1), $value->ekspedisi);
+            $objPHPExcel->getActiveSheet()->SetCellValue('M'.($row+1), $value->service);    
         }
 
 		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
@@ -169,25 +196,99 @@ class DistribusiController extends Controller
     public function print($no_manifest) {
         $user = Auth::user();
 
+        $template = DB::table('manifest')
+        ->leftJoin('production_data','manifest.production_id','=','production_data.id')
+        ->leftJoin('project_to_component','production_data.project_id','=','project_to_component.project_id')
+        ->leftJoin('components','project_to_component.component_id','=','components.id')
+        ->select('components.id','components.name','components.group')
+        ->where('manifest.no_manifest','=',$no_manifest)
+        ->where('components.group','=','jasa')
+        ->where('components.name', 'like', '%printing%')
+        ->orderBy('project_to_component.sort','ASC')->get();
+
     	$data = DB::table('manifest')
+        ->leftJoin('users','users.id','=','manifest.created_by')
     	->leftJoin('production_data','manifest.production_id','=','production_data.id')
     	->leftJoin('projects','production_data.project_id','=','projects.id')
     	->leftJoin('customers','projects.customer_id','=','customers.id')
-    	->select(DB::raw('production_data.id as prod_id'),DB::raw('projects.name as project_name'),DB::raw('customers.name as customer_name'),'manifest.cycle','manifest.part','manifest.no_manifest', 'manifest.tgl_kirim','manifest.ekspedisi','manifest.service','manifest.nama_kurir')
+    	->select('users.name as user_name','manifest.print',DB::raw('production_data.id as prod_id'),DB::raw('production_data.jenis as prod_jenis'),DB::raw('production_data.job_ticket as job_tiket'),DB::raw('projects.name as project_name'),DB::raw('projects.email as project_email'),DB::raw('customers.name as customer_name'),'manifest.jenis','manifest.cycle','manifest.part','manifest.no_manifest', 'manifest.tgl_kirim','manifest.ekspedisi','manifest.service','manifest.nama_kurir')
     	->where('no_manifest','=',$no_manifest)->first();
-    	$total = DB::table('production_data_detail')
-    	->where('production_data_detail.no_manifest','=',$no_manifest)->count();
-        DB::table('manifest')
-        ->where('no_manifest','=',$no_manifest)
-        ->increment('print');
+
+        $total = DB::select("select sum(ok.total) as totall
+                            from (select count(*) as total from production_data_detail
+                                  where production_data_detail.no_manifest = $no_manifest
+                                  group by production_data_detail.barcode_document) ok
+        ");
+        $obj = json_decode(json_encode($total));
+        
+        $rinci = DB::table('production_data_detail')
+                 ->select('production_data_detail.city','production_data_detail.barcode_document as cabang',DB::raw('count(production_data_detail.barcode_document) as total'))
+                 ->where('production_data_detail.barcode_document','!=',"")
+                 ->where('production_data_detail.no_manifest','=',$no_manifest)
+                 ->groupBy('production_data_detail.barcode_document')
+                 ->get();
+
+        //var_dump($rinci);         
+        $printing = DB::table('production_data_detail');
+        $printing=$printing->join('production_data_detail_list','production_data_detail.id','=','production_data_detail_list.production_data_detail_id');
+        $printing=$printing->leftJoin('components','components.id','=','production_data_detail_list.component_id');
+        $printing=$printing->select(DB::raw('SUM(production_data_detail_list.total) AS jml'));
+                   
+                foreach($template as $value){
+                    if(count($template) == 1){
+                        $printing=$printing->where('components.id','=',$value->id);
+                    }else{
+                        $printing=$printing->orWhere('components.id','=',$value->id);
+                    }                    
+                }
+                                        
+                    $printing->where('production_data_detail.no_manifest','=',$no_manifest);
+                    $printing = $printing->groupBy('production_data_detail_list.component_id')->get();
+        $t_print = 0;
+        foreach($printing as $value){
+            $t_print = $t_print+$value->jml;
+        }
+        
+        $inserting = DB::table('production_data_detail')                                        
+                    ->select(DB::raw('SUM(production_data_detail.bst_inserting) AS jml'))
+                    ->where('production_data_detail.no_manifest','=',$no_manifest)->first();                    
 
         $tmp = 'Kurir : '.$data->nama_kurir.', Ekspedisi : '.$data->ekspedisi.', Service : '.$data->service;
         
-        $this->updateTask($data->prod_id, $this->distribusiId, $this->resultSuccesDefault, $tmp);
-    	return view('production.distribusi.printtt')
+        if($data->print == 0){
+            DB::table('manifest')
+            ->where('no_manifest','=',$no_manifest)
+            ->increment('print');           
+            $this->updateTask($data->prod_id, $this->distribusiId, $this->resultSuccesDefault, $tmp);
+        
+            /*$body_mail = $this->build_email($data,$total);
+            $subject_mail = $this->getBodyMail(1)->subject;
+            $this->insertMailNotif($data,$subject_mail,$body_mail);*/
+        }
+
+        return view('production.distribusi.printtt')
         ->with('data',$data)
-        ->with('total',$total)
-        ->with('name', $user->name)
-        ->with('name_kurir',$data->nama_kurir);        
+        ->with('total',$obj[0]->totall)
+        ->with('rinci',$rinci)
+        ->with('name', $data->user_name)
+        ->with('printing',$t_print)
+
+        ->with('inserting',$inserting->jml)
+        ->with('name_kurir',$data->nama_kurir);      	      
+    }    
+
+    public function cekprint($no_manifest){
+        $hasil = DB::table('manifest')->where('manifest.no_manifest','=',$no_manifest)
+        ->where('manifest.print','=',0)->first();
+
+        
+        $nilai = "NO";
+        if(!is_null($hasil)){
+            $nilai = "OK";
+        }
+        
+        return response()->json([
+            "nilai" => $nilai
+        ]);
     }
 }

@@ -24,12 +24,13 @@
             </dl>            
           </div>
             <div class="col-md-2">
-              <button class="btn btn-info" id="btn_material" style="visibility: hidden;"><i class="fa fa-print"></i> Material</button>
+            <button class="btn btn-info" id="btn_material" style="visibility: hidden;"><i class="fa fa-print"></i> Material</button>
 
             </div>
         </div>
         <div class="row">
-            <table class="table table-bordered">
+        <div class="card-body table-responsive p-0" style="height: 400px;">
+            <table  class="table table-bordered table-head-fixed">
               <thead>
                 <tr>
                     <th>No Amplop</th>
@@ -42,7 +43,9 @@
               <tbody id="tbody-detail">
               </tbody>
             </table>
+          </div>
         </div>
+    <div class="col-xs-5 table-responsive">    
       <div class="card-body">
         <div id="accordion">
           
@@ -76,7 +79,7 @@
           </div>
           <!-- we are adding the .panel class so bootstrap.js collapse plugin detects it -->
           
-
+    </div>
         </div>
       </div>
       <div class="modal-footer">

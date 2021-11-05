@@ -23,6 +23,7 @@
             </div>
           </div>
 
+          <div class="col-xs-5 table-responsive">
               <div class="card-body">
                 <div id="accordion">
                   <div class="card card-primary">
@@ -58,6 +59,7 @@
 
                 </div>
               </div>
+            </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
           </div>
